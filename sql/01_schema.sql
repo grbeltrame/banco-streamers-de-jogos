@@ -18,7 +18,7 @@ CREATE TABLE Empresa (
 CREATE TABLE Conversao (
     moeda        VARCHAR(10)    PRIMARY KEY,
     nome         VARCHAR(50)    NOT NULL,
-    fator_conver NUMERIC(18, 8) NOT NULL --Por se tratar de um dado financeiro, optou-se por usar NUMERIC para ter exatidao
+    fator_conver NUMERIC(18, 8) NOT NULL -- Por se tratar de um dado financeiro, optou-se por usar NUMERIC para ter exatidao
 );
 
 CREATE TABLE Pais (
@@ -85,6 +85,7 @@ CREATE TABLE StreamerPais (
 -- =========================
 
 CREATE TABLE Canal (
+    id_canal          SERIAL       PRIMARY KEY, -- chave artificial para simplificar propagação
     nome              VARCHAR(100) NOT NULL,
     nro_plataforma    INT          NOT NULL,
     tipo              VARCHAR(10)  NOT NULL CHECK (tipo IN ('privado', 'publico', 'misto')),
@@ -93,39 +94,36 @@ CREATE TABLE Canal (
     qtd_videos        INT          DEFAULT 0,
     qtd_visualizacoes BIGINT       DEFAULT 0,
     nick_streamer     VARCHAR(50)  NOT NULL,
-    PRIMARY KEY (nome, nro_plataforma),
+    CONSTRAINT uq_canal        UNIQUE (nome, nro_plataforma),
     CONSTRAINT fk_canal_plataforma FOREIGN KEY (nro_plataforma) REFERENCES Plataforma(nro),
     CONSTRAINT fk_canal_streamer   FOREIGN KEY (nick_streamer)  REFERENCES Usuario(nick)
 );
 
 CREATE TABLE Patrocinio (
-    nro_empresa    INT            NOT NULL,
-    nome_canal     VARCHAR(100)   NOT NULL,
-    nro_plataforma INT            NOT NULL,
-    valor          NUMERIC(15, 2) NOT NULL,
-    PRIMARY KEY (nro_empresa, nome_canal, nro_plataforma),
-    CONSTRAINT fk_patroc_empresa FOREIGN KEY (nro_empresa)                REFERENCES Empresa(nro),
-    CONSTRAINT fk_patroc_canal   FOREIGN KEY (nome_canal, nro_plataforma) REFERENCES Canal(nome, nro_plataforma)
+    nro_empresa INT            NOT NULL,
+    id_canal    INT            NOT NULL,
+    valor       NUMERIC(15, 2) NOT NULL,
+    PRIMARY KEY (nro_empresa, id_canal),
+    CONSTRAINT fk_patroc_empresa FOREIGN KEY (nro_empresa) REFERENCES Empresa(nro),
+    CONSTRAINT fk_patroc_canal   FOREIGN KEY (id_canal)    REFERENCES Canal(id_canal)
 );
 
 CREATE TABLE NivelCanal (
-    nome_canal     VARCHAR(100)   NOT NULL,
-    nro_plataforma INT            NOT NULL,
-    nivel          SMALLINT       NOT NULL CHECK (nivel BETWEEN 1 AND 5),
-    valor          NUMERIC(10, 2) NOT NULL,
-    gif            VARCHAR(300)   NOT NULL,
-    PRIMARY KEY (nome_canal, nro_plataforma, nivel),
-    CONSTRAINT fk_nivelcanal_canal FOREIGN KEY (nome_canal, nro_plataforma) REFERENCES Canal(nome, nro_plataforma)
+    id_canal INT            NOT NULL,
+    nivel    SMALLINT       NOT NULL CHECK (nivel BETWEEN 1 AND 5),
+    valor    NUMERIC(10, 2) NOT NULL,
+    gif      VARCHAR(300)   NOT NULL,
+    PRIMARY KEY (id_canal, nivel),
+    CONSTRAINT fk_nivelcanal_canal FOREIGN KEY (id_canal) REFERENCES Canal(id_canal)
 );
 
 CREATE TABLE Inscricao (
-    nome_canal     VARCHAR(100) NOT NULL,
-    nro_plataforma INT          NOT NULL,
-    nick_membro    VARCHAR(50)  NOT NULL,
-    nivel          SMALLINT     NOT NULL,
-    PRIMARY KEY (nome_canal, nro_plataforma, nick_membro),
-    CONSTRAINT fk_inscricao_nivelcanal FOREIGN KEY (nome_canal, nro_plataforma, nivel)
-        REFERENCES NivelCanal(nome_canal, nro_plataforma, nivel),
+    id_canal    INT         NOT NULL,
+    nick_membro VARCHAR(50) NOT NULL,
+    nivel       SMALLINT    NOT NULL,
+    PRIMARY KEY (id_canal, nick_membro),
+    CONSTRAINT fk_inscricao_nivelcanal FOREIGN KEY (id_canal, nivel)
+        REFERENCES NivelCanal(id_canal, nivel),
     CONSTRAINT fk_inscricao_usuario FOREIGN KEY (nick_membro) REFERENCES Usuario(nick)
 );
 
@@ -134,18 +132,16 @@ CREATE TABLE Inscricao (
 -- =========================
 
 CREATE TABLE Video (
-    id_video       SERIAL         PRIMARY KEY, -- chave artificial pra simplificar propagação da chave
-    nome_canal     VARCHAR(100)   NOT NULL,
-    nro_plataforma INT            NOT NULL,
-    titulo         VARCHAR(300)   NOT NULL,
-    dataH          TIMESTAMP      NOT NULL,
-    tema           VARCHAR(100),
-    duracao        INTERVAL       NOT NULL,
-    visu_simul     INT            DEFAULT 0,
-    visu_total     BIGINT         DEFAULT 0,
-    CONSTRAINT uq_video UNIQUE (nome_canal, nro_plataforma, titulo, dataH),
-    CONSTRAINT fk_video_canal FOREIGN KEY (nome_canal, nro_plataforma)
-        REFERENCES Canal(nome, nro_plataforma)
+    id_video   SERIAL         PRIMARY KEY, -- chave artificial para simplificar propagação
+    id_canal   INT            NOT NULL,
+    titulo     VARCHAR(300)   NOT NULL,
+    dataH      TIMESTAMP      NOT NULL,
+    tema       VARCHAR(100),
+    duracao    INTERVAL       NOT NULL,
+    visu_simul INT            DEFAULT 0,
+    visu_total BIGINT         DEFAULT 0,
+    CONSTRAINT uq_video      UNIQUE (id_canal, titulo, dataH),
+    CONSTRAINT fk_video_canal FOREIGN KEY (id_canal) REFERENCES Canal(id_canal)
 );
 
 CREATE TABLE Participa (
@@ -161,72 +157,63 @@ CREATE TABLE Participa (
 -- =========================
 
 CREATE TABLE Comentario (
-    id_video     INT         NOT NULL,
-    nick_usuario VARCHAR(50) NOT NULL,
-    seq          INT         NOT NULL,
-    texto        TEXT        NOT NULL,
-    dataH        TIMESTAMP   NOT NULL,
-    coment_on    BOOLEAN     NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_video, nick_usuario, seq),
-    CONSTRAINT fk_coment_video   FOREIGN KEY (id_video)     REFERENCES Video(id_video),
-    CONSTRAINT fk_coment_usuario FOREIGN KEY (nick_usuario) REFERENCES Usuario(nick)
+    id_comentario SERIAL      PRIMARY KEY, -- chave artificial para simplificar propagação
+    id_video      INT         NOT NULL,
+    nick_usuario  VARCHAR(50) NOT NULL,
+    seq           INT         NOT NULL,
+    texto         TEXT        NOT NULL,
+    dataH         TIMESTAMP   NOT NULL,
+    coment_on     BOOLEAN     NOT NULL DEFAULT TRUE,
+    CONSTRAINT uq_comentario       UNIQUE (id_video, nick_usuario, seq),
+    CONSTRAINT fk_coment_video     FOREIGN KEY (id_video)     REFERENCES Video(id_video),
+    CONSTRAINT fk_coment_usuario   FOREIGN KEY (nick_usuario) REFERENCES Usuario(nick)
 );
 
 CREATE TABLE Doacao (
-    id_video       INT            NOT NULL,
-    nick_usuario   VARCHAR(50)    NOT NULL,
-    seq_comentario INT            NOT NULL,
-    seq_pg         INT            NOT NULL,
-    valor          NUMERIC(15, 2) NOT NULL,
-    status         VARCHAR(10)    NOT NULL
-                       CHECK (status IN ('recusado', 'recebido', 'lido')),
-    PRIMARY KEY (id_video, nick_usuario, seq_comentario, seq_pg),
-    CONSTRAINT fk_doacao_comentario FOREIGN KEY (id_video, nick_usuario, seq_comentario)
-        REFERENCES Comentario(id_video, nick_usuario, seq)
+    id_comentario INT            NOT NULL,
+    seq_pg        INT            NOT NULL,
+    valor         NUMERIC(15, 2) NOT NULL,
+    status        VARCHAR(10)    NOT NULL
+                      CHECK (status IN ('recusado', 'recebido', 'lido')),
+    PRIMARY KEY (id_comentario, seq_pg),
+    CONSTRAINT fk_doacao_comentario FOREIGN KEY (id_comentario)
+        REFERENCES Comentario(id_comentario)
 );
 
 CREATE TABLE Bitcoin (
-    id_video       INT          NOT NULL,
-    nick_usuario   VARCHAR(50)  NOT NULL,
-    seq_comentario INT          NOT NULL,
-    seq_doacao     INT          NOT NULL,
-    TxID           VARCHAR(100) NOT NULL UNIQUE,
-    PRIMARY KEY (id_video, nick_usuario, seq_comentario, seq_doacao),
-    CONSTRAINT fk_btc_doacao FOREIGN KEY (id_video, nick_usuario, seq_comentario, seq_doacao)
-        REFERENCES Doacao(id_video, nick_usuario, seq_comentario, seq_pg)
+    id_comentario INT          NOT NULL,
+    seq_doacao    INT          NOT NULL,
+    TxID          VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY (id_comentario, seq_doacao),
+    CONSTRAINT fk_btc_doacao FOREIGN KEY (id_comentario, seq_doacao)
+        REFERENCES Doacao(id_comentario, seq_pg)
 );
 
 CREATE TABLE PayPal (
-    id_video       INT          NOT NULL,
-    nick_usuario   VARCHAR(50)  NOT NULL,
-    seq_comentario INT          NOT NULL,
-    seq_doacao     INT          NOT NULL,
-    IdPayPal       VARCHAR(100) NOT NULL UNIQUE,
-    PRIMARY KEY (id_video, nick_usuario, seq_comentario, seq_doacao),
-    CONSTRAINT fk_paypal_doacao FOREIGN KEY (id_video, nick_usuario, seq_comentario, seq_doacao)
-        REFERENCES Doacao(id_video, nick_usuario, seq_comentario, seq_pg)
+    id_comentario INT          NOT NULL,
+    seq_doacao    INT          NOT NULL,
+    IdPayPal      VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY (id_comentario, seq_doacao),
+    CONSTRAINT fk_paypal_doacao FOREIGN KEY (id_comentario, seq_doacao)
+        REFERENCES Doacao(id_comentario, seq_pg)
 );
 
 CREATE TABLE CartaoCredito (
-    id_video       INT          NOT NULL,
-    nick_usuario   VARCHAR(50)  NOT NULL,
-    seq_comentario INT          NOT NULL,
-    seq_doacao     INT          NOT NULL,
-    nro            VARCHAR(20)  NOT NULL,
-    bandeira       VARCHAR(30)  NOT NULL,
-    dataH          TIMESTAMP    NOT NULL,
-    PRIMARY KEY (id_video, nick_usuario, seq_comentario, seq_doacao),
-    CONSTRAINT fk_cartao_doacao FOREIGN KEY (id_video, nick_usuario, seq_comentario, seq_doacao)
-        REFERENCES Doacao(id_video, nick_usuario, seq_comentario, seq_pg)
+    id_comentario INT          NOT NULL,
+    seq_doacao    INT          NOT NULL,
+    nro           VARCHAR(20)  NOT NULL,
+    bandeira      VARCHAR(30)  NOT NULL,
+    dataH         TIMESTAMP    NOT NULL,
+    PRIMARY KEY (id_comentario, seq_doacao),
+    CONSTRAINT fk_cartao_doacao FOREIGN KEY (id_comentario, seq_doacao)
+        REFERENCES Doacao(id_comentario, seq_pg)
 );
 
 CREATE TABLE MecanismoPlat (
-    id_video        INT         NOT NULL,
-    nick_usuario    VARCHAR(50) NOT NULL,
-    seq_comentario  INT         NOT NULL,
-    seq_doacao      INT         NOT NULL,
-    seq_plataforma  INT         NOT NULL,
-    PRIMARY KEY (id_video, nick_usuario, seq_comentario, seq_doacao),
-    CONSTRAINT fk_mecplat_doacao FOREIGN KEY (id_video, nick_usuario, seq_comentario, seq_doacao)
-        REFERENCES Doacao(id_video, nick_usuario, seq_comentario, seq_pg)
+    id_comentario  INT NOT NULL,
+    seq_doacao     INT NOT NULL,
+    seq_plataforma INT NOT NULL,
+    PRIMARY KEY (id_comentario, seq_doacao),
+    CONSTRAINT fk_mecplat_doacao FOREIGN KEY (id_comentario, seq_doacao)
+        REFERENCES Doacao(id_comentario, seq_pg)
 );

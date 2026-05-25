@@ -50,7 +50,7 @@ INSERT INTO Conversao (moeda, nome, fator_conver) VALUES
 -- =========================
 -- Pais
 -- =========================
--- Optou-se por nao colocar o Canada incialmente por possuir o mesmo DDI, mas DDI é chave primaria
+-- Optou-se por nao colocar o Canada inicialmente por possuir o mesmo DDI, mas DDI é chave primaria
 
 INSERT INTO Pais (ddi, nome, moeda) VALUES
 (1,   'Estados Unidos', 'USD'),
@@ -111,40 +111,38 @@ INSERT INTO Plataforma (nome, qtd_users, empresa_fund, empresa_respo, data_fund)
 -- Usuario
 -- =========================
 
--- 30 streamers brasileiros e internacionais famosos
 INSERT INTO Usuario (nick, email, data_nasc, telefone, end_postal, pais_residencia) VALUES
-('gaules',        'gaules@email.com',        '1983-03-16', '+5551999990001', 'Porto Alegre, RS',      55),
-('alanzoka',      'alanzoka@email.com',       '1996-05-20', '+5511999990002', 'São Paulo, SP',         55),
-('cellbit',       'cellbit@email.com',        '1996-09-08', '+5541999990003', 'Curitiba, PR',          55),
-('felps',         'felps@email.com',          '1996-12-07', '+5511999990004', 'São Paulo, SP',         55),
-('loud_coringa',  'loud_coringa@email.com',   '2000-01-15', '+5511999990005', 'São Paulo, SP',         55),
-('brtt',          'brtt@email.com',           '1995-03-22', '+5511999990006', 'São Paulo, SP',         55),
-('baiano_gamer',  'baiano_gamer@email.com',   '1994-07-10', '+5571999990007', 'Salvador, BA',          55),
-('jukes',         'jukes@email.com',          '1996-02-14', '+5511999990008', 'São Paulo, SP',         55),
-('nobru',         'nobru@email.com',          '1999-11-03', '+5511999990009', 'São Paulo, SP',         55),
-('coreano',       'coreano@email.com',        '1997-08-25', '+5521999990010', 'Rio de Janeiro, RJ',    55),
-('shroud',        'shroud@email.com',         '1994-06-02', '+1604999990011', 'Vancouver, BC',          1),
-('ninja',         'ninja@email.com',          '1991-06-05', '+1920999990012', 'Chicago, IL',            1),
-('pokimane',      'pokimane@email.com',       '1996-05-14', '+1604999990013', 'Vancouver, BC',          1),
-('tfue',          'tfue@email.com',           '1998-01-02', '+1772999990014', 'Florida, FL',            1),
-('valkyrae',      'valkyrae@email.com',       '1999-01-08', '+1702999990015', 'Las Vegas, NV',          1),
-('hasanabi',      'hasanabi@email.com',       '1991-07-23', '+1212999990016', 'New York, NY',           1),
-('asmongold',     'asmongold@email.com',      '1990-04-20', '+1512999990017', 'Austin, TX',             1),
-('moistcr1tikal', 'moistcr1tikal@email.com',  '1994-08-02', '+1813999990018', 'Tampa, FL',              1),
-('sodapoppin',    'sodapoppin@email.com',     '1994-02-15', '+1512999990019', 'Austin, TX',             1),
-('summit1g',      'summit1g@email.com',       '1987-04-23', '+1619999990020', 'San Diego, CA',          1),
-('timthetatman',  'timthetatman@email.com',   '1990-04-08', '+1716999990021', 'Buffalo, NY',            1),
-('lirik',         'lirik@email.com',          '1988-12-31', '+1858999990022', 'San Diego, CA',          1),
-('xqc',           'xqc@email.com',            '1995-11-12', '+1418999990023', 'Quebec, QC',             1),
-('jankos',        'jankos@email.com',         '1997-03-07', '+4930999990024', 'Berlin',                49),
-('caps',          'caps@email.com',           '1999-11-02', '+4530999990025', 'Copenhagen',            49),
-('rekkles',       'rekkles@email.com',        '1996-09-22', '+4630999990026', 'Gothenburg',            46),
-('faker',         'faker@email.com',          '1996-05-07', '+8210999990027', 'Seoul',                 82),
-('uzi',           'uzi@email.com',            '1999-03-03', '+8610999990028', 'Shanghai',              86),
-('s1mple',        's1mple@email.com',         '1999-10-02', '+7044999990029', 'Kiev',                   7),
-('niko',          'niko@email.com',           '1997-02-16', '+3811999990030', 'Sarajevo',              49);
+('gaules',        'gaules@email.com',        '1983-03-16', '+5551999990001', 'Porto Alegre, RS',   55),
+('alanzoka',      'alanzoka@email.com',       '1996-05-20', '+5511999990002', 'São Paulo, SP',      55),
+('cellbit',       'cellbit@email.com',        '1996-09-08', '+5541999990003', 'Curitiba, PR',       55),
+('felps',         'felps@email.com',          '1996-12-07', '+5511999990004', 'São Paulo, SP',      55),
+('loud_coringa',  'loud_coringa@email.com',   '2000-01-15', '+5511999990005', 'São Paulo, SP',      55),
+('brtt',          'brtt@email.com',           '1995-03-22', '+5511999990006', 'São Paulo, SP',      55),
+('baiano_gamer',  'baiano_gamer@email.com',   '1994-07-10', '+5571999990007', 'Salvador, BA',       55),
+('jukes',         'jukes@email.com',          '1996-02-14', '+5511999990008', 'São Paulo, SP',      55),
+('nobru',         'nobru@email.com',          '1999-11-03', '+5511999990009', 'São Paulo, SP',      55),
+('coreano',       'coreano@email.com',        '1997-08-25', '+5521999990010', 'Rio de Janeiro, RJ', 55),
+('shroud',        'shroud@email.com',         '1994-06-02', '+1604999990011', 'Vancouver, BC',       1),
+('ninja',         'ninja@email.com',          '1991-06-05', '+1920999990012', 'Chicago, IL',         1),
+('pokimane',      'pokimane@email.com',       '1996-05-14', '+1604999990013', 'Vancouver, BC',       1),
+('tfue',          'tfue@email.com',           '1998-01-02', '+1772999990014', 'Florida, FL',         1),
+('valkyrae',      'valkyrae@email.com',       '1999-01-08', '+1702999990015', 'Las Vegas, NV',       1),
+('hasanabi',      'hasanabi@email.com',       '1991-07-23', '+1212999990016', 'New York, NY',        1),
+('asmongold',     'asmongold@email.com',      '1990-04-20', '+1512999990017', 'Austin, TX',          1),
+('moistcr1tikal', 'moistcr1tikal@email.com',  '1994-08-02', '+1813999990018', 'Tampa, FL',           1),
+('sodapoppin',    'sodapoppin@email.com',     '1994-02-15', '+1512999990019', 'Austin, TX',          1),
+('summit1g',      'summit1g@email.com',       '1987-04-23', '+1619999990020', 'San Diego, CA',       1),
+('timthetatman',  'timthetatman@email.com',   '1990-04-08', '+1716999990021', 'Buffalo, NY',         1),
+('lirik',         'lirik@email.com',          '1988-12-31', '+1858999990022', 'San Diego, CA',       1),
+('xqc',           'xqc@email.com',            '1995-11-12', '+1418999990023', 'Quebec, QC',          1),
+('jankos',        'jankos@email.com',         '1997-03-07', '+4930999990024', 'Berlin',             49),
+('caps',          'caps@email.com',           '1999-11-02', '+4530999990025', 'Copenhagen',         49),
+('rekkles',       'rekkles@email.com',        '1996-09-22', '+4630999990026', 'Gothenburg',         46),
+('faker',         'faker@email.com',          '1996-05-07', '+8210999990027', 'Seoul',              82),
+('uzi',           'uzi@email.com',            '1999-03-03', '+8610999990028', 'Shanghai',           86),
+('s1mple',        's1mple@email.com',         '1999-10-02', '+7044999990029', 'Kiev',                7),
+('niko',          'niko@email.com',           '1997-02-16', '+3811999990030', 'Sarajevo',           49);
 
--- 70 streamers gerados
 INSERT INTO Usuario (nick, email, data_nasc, telefone, end_postal, pais_residencia)
 SELECT
     'streamer_' || i,
@@ -161,7 +159,6 @@ SELECT
     END
 FROM generate_series(1, 70) AS i;
 
--- 900 usuarios comuns
 INSERT INTO Usuario (nick, email, data_nasc, telefone, end_postal, pais_residencia)
 SELECT
     'user_' || i,
@@ -187,7 +184,6 @@ FROM generate_series(1, 900) AS i;
 -- StreamerPais
 -- =========================
 
--- streamers famosos
 INSERT INTO StreamerPais (nick_streamer, ddi_pais, nro_passaporte) VALUES
 ('gaules',        55, 'BR-PASS-0001'),
 ('alanzoka',      55, 'BR-PASS-0002'),
@@ -220,7 +216,6 @@ INSERT INTO StreamerPais (nick_streamer, ddi_pais, nro_passaporte) VALUES
 ('s1mple',         7, 'RU-PASS-0001'),
 ('niko',          49, 'DE-PASS-0003');
 
--- streamers gerados
 INSERT INTO StreamerPais (nick_streamer, ddi_pais, nro_passaporte)
 SELECT
     'streamer_' || i,
@@ -239,10 +234,9 @@ FROM generate_series(1, 70) AS i;
 -- =========================
 
 INSERT INTO PlataformaUsuario (nro_plataforma, nick_usuario, nro_usuario) VALUES
--- Brasileiros: Twitch (1) + YouTube (2)
 (1, 'gaules',        'twitch_gaules'),
 (2, 'gaules',        'yt_gaules'),
-(4, 'gaules',       'kick_gaules'),
+(4, 'gaules',        'kick_gaules'),
 (1, 'alanzoka',      'twitch_alanzoka'),
 (2, 'alanzoka',      'yt_alanzoka'),
 (1, 'cellbit',       'twitch_cellbit'),
@@ -302,20 +296,12 @@ INSERT INTO PlataformaUsuario (nro_plataforma, nick_usuario, nro_usuario) VALUES
 (1, 'niko',          'twitch_niko'),
 (2, 'niko',          'yt_niko');
 
--- streamers gerados — cada um em 1 plataforma
 INSERT INTO PlataformaUsuario (nro_plataforma, nick_usuario, nro_usuario)
-SELECT
-    (i % 5) + 1,
-    'streamer_' || i,
-    'uid_str_' || i
+SELECT (i % 5) + 1, 'streamer_' || i, 'uid_str_' || i
 FROM generate_series(1, 70) AS i;
 
--- usuarios comuns — cada um em 1 plataforma
 INSERT INTO PlataformaUsuario (nro_plataforma, nick_usuario, nro_usuario)
-SELECT
-    (i % 5) + 1,
-    'user_' || i,
-    'uid_user_' || i
+SELECT (i % 5) + 1, 'user_' || i, 'uid_user_' || i
 FROM generate_series(1, 900) AS i;
 
 -- =========================
@@ -323,61 +309,58 @@ FROM generate_series(1, 900) AS i;
 -- =========================
 
 INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, nick_streamer) VALUES
--- Brasileiros
-('gaules',         1, 'publico', '2015-07-10', 'CS e FPS competitivo',          'gaules'),
-('gaules',         2, 'publico', '2016-01-01', 'Highlights e torneios',         'gaules'),
-('gaules',         4, 'publico', '2023-05-01', 'Canal do Gaules na Kick',       'gaules'),
-('alanzoka',       1, 'publico', '2018-09-01', 'RPGs e narrativa',              'alanzoka'),
-('alanzoka',       2, 'publico', '2019-03-01', 'VODs e highlights',             'alanzoka'),
-('cellbit',        1, 'publico', '2019-03-22', 'Terror e horror games',         'cellbit'),
-('cellbit',        2, 'publico', '2021-02-10', 'Conteúdo extra do Cellbit',     'cellbit'),
-('felps',          1, 'publico', '2017-08-08', 'Variety gaming',                'felps'),
-('felps',          2, 'publico', '2020-11-01', 'Melhores momentos',             'felps'),
-('loud_coringa',   1, 'publico', '2020-01-10', 'Canal oficial LOUD Coringa',    'loud_coringa'),
-('loud_coringa',   2, 'publico', '2021-06-01', 'Highlights da LOUD',            'loud_coringa'),
-('brtt',           1, 'publico', '2018-04-01', 'League of Legends',             'brtt'),
-('brtt',           2, 'publico', '2019-08-01', 'Clips e highlights',            'brtt'),
-('baiano_gamer',   1, 'publico', '2021-04-01', 'Clash Royale e mobile',         'baiano_gamer'),
-('baiano_gamer',   2, 'publico', '2022-01-01', 'VODs do Baiano',                'baiano_gamer'),
-('baiano_gamer',   4, 'publico', '2023-06-01', 'BaianoTV na Kick',              'baiano_gamer'),
-('jukes',          1, 'publico', '2019-01-01', 'League of Legends',             'jukes'),
-('nobru',          1, 'publico', '2020-03-01', 'Free Fire e mobile',            'nobru'),
-('coreano',        1, 'publico', '2018-11-01', 'Variety e jogos',               'coreano'),
--- Internacionais
-('xqc',            1, 'publico', '2016-03-01', 'Variety e reacts',              'xqc'),
-('xqc',            4, 'publico', '2023-02-01', 'Canal do xQc na Kick',          'xqc'),
-('shroud',         1, 'publico', '2014-02-20', 'FPS profissional',              'shroud'),
-('shroud',         2, 'publico', '2018-01-01', 'Highlights do Shroud',          'shroud'),
-('ninja',          1, 'publico', '2011-11-01', 'Fortnite e highlights',         'ninja'),
-('ninja',          2, 'publico', '2018-03-01', 'Canal do Ninja no YouTube',     'ninja'),
-('pokimane',       1, 'publico', '2017-05-15', 'Variety e reacts',              'pokimane'),
-('pokimane',       2, 'misto',   '2018-06-01', 'VODs e highlights',             'pokimane'),
-('tfue',           1, 'publico', '2018-04-05', 'Fortnite competitivo',          'tfue'),
-('tfue',           4, 'publico', '2023-03-01', 'Canal do Tfue na Kick',         'tfue'),
-('valkyrae',       1, 'publico', '2019-01-20', 'Variety e Among Us',            'valkyrae'),
-('valkyrae',       2, 'publico', '2020-05-01', 'Highlights da Valkyrae',        'valkyrae'),
-('hasanabi',       1, 'publico', '2018-05-12', 'Política e jogos',              'hasanabi'),
-('hasanabi',       4, 'publico', '2023-04-01', 'Canal do Hasan na Kick',        'hasanabi'),
-('asmongold',      1, 'publico', '2014-09-09', 'World of Warcraft e MMOs',      'asmongold'),
-('asmongold',      2, 'publico', '2019-01-01', 'Highlights do Asmongold',       'asmongold'),
-('moistcr1tikal',  1, 'publico', '2019-07-07', 'Reacts e comentários',          'moistcr1tikal'),
-('moistcr1tikal',  2, 'publico', '2020-01-01', 'Canal principal do Moist',      'moistcr1tikal'),
-('sodapoppin',     1, 'publico', '2012-03-15', 'Variety stream',                'sodapoppin'),
-('summit1g',       1, 'publico', '2012-06-01', 'FPS e variety',                 'summit1g'),
-('summit1g',       4, 'publico', '2023-03-01', 'Canal do Summit na Kick',       'summit1g'),
-('timthetatman',   1, 'publico', '2012-09-01', 'Gameplay com amigos',           'timthetatman'),
-('timthetatman',   2, 'publico', '2019-06-01', 'Highlights do Tatman',          'timthetatman'),
-('lirik',          1, 'publico', '2013-01-01', 'FPS e variety',                 'lirik'),
-('jankos',         1, 'publico', '2016-11-15', 'League of Legends pro',         'jankos'),
-('caps',           1, 'publico', '2018-03-01', 'League of Legends pro',         'caps'),
-('rekkles',        1, 'publico', '2016-05-01', 'League of Legends pro',         'rekkles'),
-('faker',          1, 'publico', '2015-09-01', 'League of Legends pro',         'faker'),
-('faker',          2, 'publico', '2018-01-01', 'Canal do Faker no YouTube',     'faker'),
-('uzi',            1, 'publico', '2016-01-01', 'League of Legends pro',         'uzi'),
-('s1mple',         1, 'publico', '2016-08-01', 'CS profissional',               's1mple'),
-('niko',           1, 'publico', '2017-04-01', 'CS profissional',               'niko');
+('gaules',         1, 'publico', '2015-07-10', 'CS e FPS competitivo',         'gaules'),
+('gaules',         2, 'publico', '2016-01-01', 'Highlights e torneios',        'gaules'),
+('gaules',         4, 'publico', '2023-05-01', 'Canal do Gaules na Kick',      'gaules'),
+('alanzoka',       1, 'publico', '2018-09-01', 'RPGs e narrativa',             'alanzoka'),
+('alanzoka',       2, 'publico', '2019-03-01', 'VODs e highlights',            'alanzoka'),
+('cellbit',        1, 'publico', '2019-03-22', 'Terror e horror games',        'cellbit'),
+('cellbit',        2, 'publico', '2021-02-10', 'Conteúdo extra do Cellbit',    'cellbit'),
+('felps',          1, 'publico', '2017-08-08', 'Variety gaming',               'felps'),
+('felps',          2, 'publico', '2020-11-01', 'Melhores momentos',            'felps'),
+('loud_coringa',   1, 'publico', '2020-01-10', 'Canal oficial LOUD Coringa',   'loud_coringa'),
+('loud_coringa',   2, 'publico', '2021-06-01', 'Highlights da LOUD',           'loud_coringa'),
+('brtt',           1, 'publico', '2018-04-01', 'League of Legends',            'brtt'),
+('brtt',           2, 'publico', '2019-08-01', 'Clips e highlights',           'brtt'),
+('baiano_gamer',   1, 'publico', '2021-04-01', 'Clash Royale e mobile',        'baiano_gamer'),
+('baiano_gamer',   2, 'publico', '2022-01-01', 'VODs do Baiano',               'baiano_gamer'),
+('baiano_gamer',   4, 'publico', '2023-06-01', 'BaianoTV na Kick',             'baiano_gamer'),
+('jukes',          1, 'publico', '2019-01-01', 'League of Legends',            'jukes'),
+('nobru',          1, 'publico', '2020-03-01', 'Free Fire e mobile',           'nobru'),
+('coreano',        1, 'publico', '2018-11-01', 'Variety e jogos',              'coreano'),
+('xqc',            1, 'publico', '2016-03-01', 'Variety e reacts',             'xqc'),
+('xqc',            4, 'publico', '2023-02-01', 'Canal do xQc na Kick',         'xqc'),
+('shroud',         1, 'publico', '2014-02-20', 'FPS profissional',             'shroud'),
+('shroud',         2, 'publico', '2018-01-01', 'Highlights do Shroud',         'shroud'),
+('ninja',          1, 'publico', '2011-11-01', 'Fortnite e highlights',        'ninja'),
+('ninja',          2, 'publico', '2018-03-01', 'Canal do Ninja no YouTube',    'ninja'),
+('pokimane',       1, 'publico', '2017-05-15', 'Variety e reacts',             'pokimane'),
+('pokimane',       2, 'misto',   '2018-06-01', 'VODs e highlights',            'pokimane'),
+('tfue',           1, 'publico', '2018-04-05', 'Fortnite competitivo',         'tfue'),
+('tfue',           4, 'publico', '2023-03-01', 'Canal do Tfue na Kick',        'tfue'),
+('valkyrae',       1, 'publico', '2019-01-20', 'Variety e Among Us',           'valkyrae'),
+('valkyrae',       2, 'publico', '2020-05-01', 'Highlights da Valkyrae',       'valkyrae'),
+('hasanabi',       1, 'publico', '2018-05-12', 'Política e jogos',             'hasanabi'),
+('hasanabi',       4, 'publico', '2023-04-01', 'Canal do Hasan na Kick',       'hasanabi'),
+('asmongold',      1, 'publico', '2014-09-09', 'World of Warcraft e MMOs',     'asmongold'),
+('asmongold',      2, 'publico', '2019-01-01', 'Highlights do Asmongold',      'asmongold'),
+('moistcr1tikal',  1, 'publico', '2019-07-07', 'Reacts e comentários',         'moistcr1tikal'),
+('moistcr1tikal',  2, 'publico', '2020-01-01', 'Canal principal do Moist',     'moistcr1tikal'),
+('sodapoppin',     1, 'publico', '2012-03-15', 'Variety stream',               'sodapoppin'),
+('summit1g',       1, 'publico', '2012-06-01', 'FPS e variety',                'summit1g'),
+('summit1g',       4, 'publico', '2023-03-01', 'Canal do Summit na Kick',      'summit1g'),
+('timthetatman',   1, 'publico', '2012-09-01', 'Gameplay com amigos',          'timthetatman'),
+('timthetatman',   2, 'publico', '2019-06-01', 'Highlights do Tatman',         'timthetatman'),
+('lirik',          1, 'publico', '2013-01-01', 'FPS e variety',                'lirik'),
+('jankos',         1, 'publico', '2016-11-15', 'League of Legends pro',        'jankos'),
+('caps',           1, 'publico', '2018-03-01', 'League of Legends pro',        'caps'),
+('rekkles',        1, 'publico', '2016-05-01', 'League of Legends pro',        'rekkles'),
+('faker',          1, 'publico', '2015-09-01', 'League of Legends pro',        'faker'),
+('faker',          2, 'publico', '2018-01-01', 'Canal do Faker no YouTube',    'faker'),
+('uzi',            1, 'publico', '2016-01-01', 'League of Legends pro',        'uzi'),
+('s1mple',         1, 'publico', '2016-08-01', 'CS profissional',              's1mple'),
+('niko',           1, 'publico', '2017-04-01', 'CS profissional',              'niko');
 
--- canais dos streamers gerados
 INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, nick_streamer)
 SELECT
     'streamer_' || i,
@@ -389,40 +372,42 @@ SELECT
 FROM generate_series(1, 70) AS i;
 
 -- =========================
--- Patrocinio
+-- Patrocinio (agora usa id_canal)
 -- =========================
 
-INSERT INTO Patrocinio (nro_empresa, nome_canal, nro_plataforma, valor) VALUES
--- Periféricos patrocinando canais famosos
-(15, 'gaules',        1, 45000.00),  -- Razer patrocina Gaules
-(16, 'gaules',        2, 20000.00),  -- Logitech patrocina Gaules no YouTube
-(15, 'shroud',        1, 60000.00),  -- Razer patrocina Shroud
-(16, 'ninja',         1, 80000.00),  -- Logitech patrocina Ninja
-(15, 'tfue',          1, 35000.00),  -- Razer patrocina Tfue
-(16, 'summit1g',      1, 30000.00),  -- Logitech patrocina Summit
-(17, 'jankos',        1, 25000.00),  -- SteelSeries patrocina Jankos
-(18, 'valkyrae',      2, 40000.00),  -- Corsair patrocina Valkyrae
-(17, 'faker',         1, 55000.00),  -- SteelSeries patrocina Faker
-(15, 'xqc',           1, 70000.00),  -- Razer patrocina xQc
-(16, 'asmongold',     1, 20000.00),  -- Logitech patrocina Asmongold
-(18, 'cellbit',       1, 33000.00),  -- Corsair patrocina Cellbit
-(13, 'alanzoka',      1, 18000.00),  -- Ubisoft patrocina Alanzoka
-(14, 'loud_coringa',  1, 55000.00),  -- Epic Games patrocina Coringa
-(14, 'ninja',         2, 65000.00),  -- Epic Games patrocina Ninja no YouTube
-(10, 'felps',         1, 15000.00),  -- EA patrocina Felps
-(9,  'brtt',          1, 22000.00),  -- Riot patrocina brTT
-(9,  'caps',          1, 28000.00),  -- Riot patrocina Caps
-(9,  'rekkles',       1, 25000.00),  -- Riot patrocina Rekkles
-(4,  'hasanabi',      1, 12000.00);  -- Microsoft patrocina Hasanabi
+INSERT INTO Patrocinio (nro_empresa, id_canal, valor)
+SELECT nro_empresa, c.id_canal, valor
+FROM (VALUES
+    (15, 'gaules',       1, 45000.00),
+    (16, 'gaules',       2, 20000.00),
+    (15, 'shroud',       1, 60000.00),
+    (16, 'ninja',        1, 80000.00),
+    (15, 'tfue',         1, 35000.00),
+    (16, 'summit1g',     1, 30000.00),
+    (17, 'jankos',       1, 25000.00),
+    (18, 'valkyrae',     2, 40000.00),
+    (17, 'faker',        1, 55000.00),
+    (15, 'xqc',          1, 70000.00),
+    (16, 'asmongold',    1, 20000.00),
+    (18, 'cellbit',      1, 33000.00),
+    (13, 'alanzoka',     1, 18000.00),
+    (14, 'loud_coringa', 1, 55000.00),
+    (14, 'ninja',        2, 65000.00),
+    (10, 'felps',        1, 15000.00),
+    (9,  'brtt',         1, 22000.00),
+    (9,  'caps',         1, 28000.00),
+    (9,  'rekkles',      1, 25000.00),
+    (4,  'hasanabi',     1, 12000.00)
+) AS t(nro_empresa, nome_canal, nro_plataforma, valor)
+JOIN Canal c ON c.nome = t.nome_canal AND c.nro_plataforma = t.nro_plataforma;
 
 -- =========================
--- NivelCanal
+-- NivelCanal (agora usa id_canal)
 -- =========================
 
-INSERT INTO NivelCanal (nome_canal, nro_plataforma, nivel, valor, gif)
+INSERT INTO NivelCanal (id_canal, nivel, valor, gif)
 SELECT
-    c.nome,
-    c.nro_plataforma,
+    c.id_canal,
     n.nivel,
     CASE n.nivel
         WHEN 1 THEN  4.99
@@ -431,18 +416,17 @@ SELECT
         WHEN 4 THEN 49.99
         WHEN 5 THEN 99.99
     END,
-    'https://cdn.streaming.io/gifs/' || c.nome || '_nivel' || n.nivel || '.gif'
+    'gifs/' || c.nome || '_nivel' || n.nivel || '.gif'
 FROM Canal c
 CROSS JOIN (SELECT generate_series(1, 5) AS nivel) n;
 
 -- =========================
--- Inscricao
+-- Inscricao (agora usa id_canal)
 -- =========================
 
-INSERT INTO Inscricao (nome_canal, nro_plataforma, nick_membro, nivel)
+INSERT INTO Inscricao (id_canal, nick_membro, nivel)
 SELECT DISTINCT
-    c.nome,
-    c.nro_plataforma,
+    c.id_canal,
     'user_' || i,
     ((ABS(HASHTEXT('user_' || i || c.nome)) % 5) + 1)::SMALLINT
 FROM Canal c
@@ -451,13 +435,12 @@ WHERE (ABS(HASHTEXT('user_' || i || c.nome)) % 10) = 0
 LIMIT 1000;
 
 -- =========================
--- Video
+-- Video (agora usa id_canal)
 -- =========================
 
-INSERT INTO Video (nome_canal, nro_plataforma, titulo, dataH, tema, duracao, visu_simul, visu_total)
+INSERT INTO Video (id_canal, titulo, dataH, tema, duracao, visu_simul, visu_total)
 SELECT
-    c.nome,
-    c.nro_plataforma,
+    c.id_canal,
     CASE (i % 10)
         WHEN 0 THEN 'Ranked ao vivo #' || i || ' — ' || c.nome
         WHEN 1 THEN 'Torneio especial #' || i || ' — ' || c.nome
@@ -494,22 +477,20 @@ SELECT DISTINCT
     v.id_video,
     s.nick_streamer
 FROM Video v
-JOIN StreamerPais s ON s.nick_streamer <> (
-    SELECT nick_streamer FROM Canal
-    WHERE nome = v.nome_canal AND nro_plataforma = v.nro_plataforma
-)
+JOIN Canal c ON c.id_canal = v.id_canal
+JOIN StreamerPais s ON s.nick_streamer <> c.nick_streamer
 WHERE v.id_video % 7 = 0
 LIMIT 200;
 
 -- =========================
--- Comentario
+-- Comentario (agora tem id_comentario SERIAL)
 -- =========================
 
 INSERT INTO Comentario (id_video, nick_usuario, seq, texto, dataH, coment_on)
 SELECT
     v.id_video,
     u.nick,
-    ROW_NUMBER() OVER (PARTITION BY v.id_video ORDER BY u.nick) AS seq,
+    ROW_NUMBER() OVER (PARTITION BY v.id_video ORDER BY u.nick)::INT,
     CASE (v.id_video % 8)
         WHEN 0 THEN 'Que stream incrível, mano!'
         WHEN 1 THEN 'GG, foi muito bom!'
@@ -527,14 +508,12 @@ CROSS JOIN (SELECT nick FROM Usuario WHERE nick LIKE 'user_%' LIMIT 10) u
 LIMIT 1000;
 
 -- =========================
--- Doacao
+-- Doacao (agora usa id_comentario)
 -- =========================
 
-INSERT INTO Doacao (id_video, nick_usuario, seq_comentario, seq_pg, valor, status)
+INSERT INTO Doacao (id_comentario, seq_pg, valor, status)
 SELECT
-    c.id_video,
-    c.nick_usuario,
-    c.seq,
+    c.id_comentario,
     1,
     ROUND((5.00 + (ABS(HASHTEXT(c.nick_usuario || c.id_video::TEXT)) % 200))::NUMERIC, 2),
     CASE (ABS(HASHTEXT(c.nick_usuario)) % 3)
@@ -547,56 +526,56 @@ WHERE c.id_video % 2 = 0
 LIMIT 500;
 
 -- =========================
--- Bitcoin
+-- Bitcoin (agora usa id_comentario)
 -- =========================
 
-INSERT INTO Bitcoin (id_video, nick_usuario, seq_comentario, seq_doacao, TxID)
+INSERT INTO Bitcoin (id_comentario, seq_doacao, TxID)
 SELECT
-    id_video, nick_usuario, seq_comentario, seq_pg,
-    'btctxid_' || id_video || '_' || seq_comentario || '_' || ABS(HASHTEXT(nick_usuario || seq_pg::TEXT))
-FROM Doacao
-WHERE (ABS(HASHTEXT(nick_usuario || id_video::TEXT)) % 4) = 0
+    d.id_comentario, d.seq_pg,
+    'btctxid_' || d.id_comentario || '_' || ABS(HASHTEXT(d.id_comentario::TEXT || d.seq_pg::TEXT))
+FROM Doacao d
+WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 0
 LIMIT 125;
 
 -- =========================
--- PayPal
+-- PayPal (agora usa id_comentario)
 -- =========================
 
-INSERT INTO PayPal (id_video, nick_usuario, seq_comentario, seq_doacao, IdPayPal)
+INSERT INTO PayPal (id_comentario, seq_doacao, IdPayPal)
 SELECT
-    id_video, nick_usuario, seq_comentario, seq_pg,
-    'PAYPAL-' || UPPER(SUBSTRING(MD5(nick_usuario || id_video::TEXT), 1, 16))
-FROM Doacao
-WHERE (ABS(HASHTEXT(nick_usuario || id_video::TEXT)) % 4) = 1
+    d.id_comentario, d.seq_pg,
+    'PAYPAL-' || UPPER(SUBSTRING(MD5(d.id_comentario::TEXT), 1, 16))
+FROM Doacao d
+WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 1
 LIMIT 125;
 
 -- =========================
--- CartaoCredito
+-- CartaoCredito (agora usa id_comentario)
 -- =========================
 
-INSERT INTO CartaoCredito (id_video, nick_usuario, seq_comentario, seq_doacao, nro, bandeira, dataH)
+INSERT INTO CartaoCredito (id_comentario, seq_doacao, nro, bandeira, dataH)
 SELECT
-    id_video, nick_usuario, seq_comentario, seq_pg,
-    '4' || LPAD((ABS(HASHTEXT(nick_usuario)) % 1000000000000000)::TEXT, 15, '0'),
-    CASE (ABS(HASHTEXT(nick_usuario)) % 4)
+    d.id_comentario, d.seq_pg,
+    '4' || LPAD((ABS(HASHTEXT(d.id_comentario::TEXT)) % 1000000000000000)::TEXT, 15, '0'),
+    CASE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4)
         WHEN 0 THEN 'Visa'
         WHEN 1 THEN 'Mastercard'
         WHEN 2 THEN 'Amex'
         ELSE        'Elo'
     END,
-    NOW() - ((ABS(HASHTEXT(nick_usuario)) % 365) || ' days')::INTERVAL
-FROM Doacao
-WHERE (ABS(HASHTEXT(nick_usuario || id_video::TEXT)) % 4) = 2
+    NOW() - ((ABS(HASHTEXT(d.id_comentario::TEXT)) % 365) || ' days')::INTERVAL
+FROM Doacao d
+WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 2
 LIMIT 125;
 
 -- =========================
--- MecanismoPlat
+-- MecanismoPlat (agora usa id_comentario)
 -- =========================
 
-INSERT INTO MecanismoPlat (id_video, nick_usuario, seq_comentario, seq_doacao, seq_plataforma)
+INSERT INTO MecanismoPlat (id_comentario, seq_doacao, seq_plataforma)
 SELECT
-    id_video, nick_usuario, seq_comentario, seq_pg,
-    ROW_NUMBER() OVER (ORDER BY id_video, nick_usuario)
-FROM Doacao
-WHERE (ABS(HASHTEXT(nick_usuario || id_video::TEXT)) % 4) = 3
+    d.id_comentario, d.seq_pg,
+    ROW_NUMBER() OVER (ORDER BY d.id_comentario)
+FROM Doacao d
+WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 3
 LIMIT 125;
