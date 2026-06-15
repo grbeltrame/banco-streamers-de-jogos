@@ -31,6 +31,12 @@ INSERT INTO Empresa (nome, nome_fantasia) VALUES
 ('Nuuvem Ltda.',              'Nuuvem'),
 ('Rockstar Games',            'RockStar');
 
+INSERT INTO Empresa (nome, nome_fantasia)
+SELECT
+    'Empresa Gerada ' || i,
+    'Marca Gerada ' || i
+FROM generate_series(1, 80) AS i;
+
 -- =========================
 -- Conversao
 -- =========================
@@ -45,7 +51,18 @@ INSERT INTO Conversao (moeda, nome, fator_conver) VALUES
 ('CAD', 'Dólar Canadense',   0.73000000),
 ('AUD', 'Dólar Australiano', 0.65000000),
 ('MXN', 'Peso Mexicano',     0.05800000),
-('SEK', 'Coroa Sueca',       0.09500000);
+('SEK', 'Coroa Sueca',       0.09500000),
+('DKK', 'Coroa Dinamarquesa', 0.14500000),
+('UAH', 'Hryvnia Ucraniana',  0.02500000),
+('BAM', 'Marco Conversivel',  0.55000000),
+('CNY', 'Yuan Chines',       0.14000000);
+
+INSERT INTO Conversao (moeda, nome, fator_conver)
+SELECT
+    'X' || LPAD(i::TEXT, 3, '0'),
+    'Moeda Gerada ' || i,
+    ROUND((0.01000000 + i * 0.00310000)::NUMERIC, 8)
+FROM generate_series(1, 86) AS i;
 
 -- =========================
 -- Pais
@@ -63,11 +80,21 @@ INSERT INTO Pais (ddi, nome, moeda) VALUES
 (61,  'Austrália',      'AUD'),
 (52,  'México',         'MXN'),
 (46,  'Suécia',         'SEK'),
+(45,  'Dinamarca',      'DKK'),
 (34,  'Espanha',        'EUR'),
 (39,  'Itália',         'EUR'),
+(380, 'Ucrânia',        'UAH'),
+(387, 'Bósnia e Herzegovina', 'BAM'),
 (7,   'Rússia',         'EUR'),
-(86,  'China',          'USD'),
+(86,  'China',          'CNY'),
 (351, 'Portugal',       'EUR');
+
+INSERT INTO Pais (ddi, nome, moeda)
+SELECT
+    1000 + i,
+    'Pais Gerado ' || i,
+    'X' || LPAD((((i - 1) % 85) + 1)::TEXT, 3, '0')
+FROM generate_series(1, 82) AS i;
 
 -- =========================
 -- EmpresaPais
@@ -96,6 +123,13 @@ INSERT INTO EmpresaPais (nro_empresa, ddi_pais, id_nacional) VALUES
 (20, 55,  'BR-NUUVEM-001'),
 (21, 1,   'US-ROCKSTAR-001');
 
+INSERT INTO EmpresaPais (nro_empresa, ddi_pais, id_nacional)
+SELECT
+    21 + i,
+    1000 + i,
+    'ID-GERADO-' || LPAD(i::TEXT, 3, '0')
+FROM generate_series(1, 80) AS i;
+
 -- =========================
 -- Plataforma
 -- =========================
@@ -106,6 +140,15 @@ INSERT INTO Plataforma (nome, qtd_users, empresa_fund, empresa_respo, data_fund)
 ('Facebook Gaming', 38000000, 3,  3,  '2018-06-01'),
 ('Kick',            10000000, 19, 19, '2022-12-01'),
 ('TikTok Live',     30000000, 3,  3,  '2019-01-01');
+
+INSERT INTO Plataforma (nome, qtd_users, empresa_fund, empresa_respo, data_fund)
+SELECT
+    'Platform_' || LPAD(i::TEXT, 3, '0'),
+    0,
+    22 + ((i - 1) % 80),
+    22 + ((i + 16) % 80),
+    ('2010-01-01'::DATE + (i * 11 || ' days')::INTERVAL)::DATE
+FROM generate_series(1, 95) AS i;
 
 -- =========================
 -- Usuario
@@ -136,12 +179,12 @@ INSERT INTO Usuario (nick, email, data_nasc, telefone, end_postal, pais_residenc
 ('lirik',         'lirik@email.com',          '1988-12-31', '+1858999990022', 'San Diego, CA',       1),
 ('xqc',           'xqc@email.com',            '1995-11-12', '+1418999990023', 'Quebec, QC',          1),
 ('jankos',        'jankos@email.com',         '1997-03-07', '+4930999990024', 'Berlin',             49),
-('caps',          'caps@email.com',           '1999-11-02', '+4530999990025', 'Copenhagen',         49),
+('caps',          'caps@email.com',           '1999-11-02', '+4530999990025', 'Copenhagen',         45),
 ('rekkles',       'rekkles@email.com',        '1996-09-22', '+4630999990026', 'Gothenburg',         46),
 ('faker',         'faker@email.com',          '1996-05-07', '+8210999990027', 'Seoul',              82),
 ('uzi',           'uzi@email.com',            '1999-03-03', '+8610999990028', 'Shanghai',           86),
-('s1mple',        's1mple@email.com',         '1999-10-02', '+7044999990029', 'Kiev',                7),
-('niko',          'niko@email.com',           '1997-02-16', '+3811999990030', 'Sarajevo',           49);
+('s1mple',        's1mple@email.com',         '1999-10-02', '+7044999990029', 'Kiev',               380),
+('niko',          'niko@email.com',           '1997-02-16', '+3811999990030', 'Sarajevo',           387);
 
 INSERT INTO Usuario (nick, email, data_nasc, telefone, end_postal, pais_residencia)
 SELECT
@@ -178,7 +221,7 @@ SELECT
         WHEN 8 THEN 52
         ELSE        46
     END
-FROM generate_series(1, 900) AS i;
+FROM generate_series(1, 850) AS i;
 
 -- =========================
 -- StreamerPais
@@ -209,12 +252,12 @@ INSERT INTO StreamerPais (nick_streamer, ddi_pais, nro_passaporte) VALUES
 ('lirik',          1, 'US-PASS-0012'),
 ('xqc',            1, 'US-PASS-0013'),
 ('jankos',        49, 'DE-PASS-0001'),
-('caps',          49, 'DE-PASS-0002'),
+('caps',          45, 'DK-PASS-0001'),
 ('rekkles',       46, 'SE-PASS-0001'),
 ('faker',         82, 'KR-PASS-0001'),
 ('uzi',           86, 'CN-PASS-0001'),
-('s1mple',         7, 'RU-PASS-0001'),
-('niko',          49, 'DE-PASS-0003');
+('s1mple',       380, 'UA-PASS-0001'),
+('niko',         387, 'BA-PASS-0001');
 
 INSERT INTO StreamerPais (nick_streamer, ddi_pais, nro_passaporte)
 SELECT
@@ -302,7 +345,16 @@ FROM generate_series(1, 70) AS i;
 
 INSERT INTO PlataformaUsuario (nro_plataforma, nick_usuario, nro_usuario)
 SELECT (i % 5) + 1, 'user_' || i, 'uid_user_' || i
-FROM generate_series(1, 900) AS i;
+FROM generate_series(1, 850) AS i;
+
+UPDATE Plataforma p
+SET qtd_users = src.total_users
+FROM (
+    SELECT nro_plataforma, COUNT(*) AS total_users
+    FROM PlataformaUsuario
+    GROUP BY nro_plataforma
+) AS src
+WHERE src.nro_plataforma = p.nro;
 
 -- =========================
 -- Canal
@@ -401,14 +453,29 @@ FROM (VALUES
 ) AS t(nro_empresa, nome_canal, nro_plataforma, valor)
 JOIN Canal c ON c.nome = t.nome_canal AND c.nro_plataforma = t.nro_plataforma;
 
+INSERT INTO Patrocinio (nro_empresa, id_canal, valor)
+SELECT
+    22 + ((c.id_canal - 1) % 80),
+    c.id_canal,
+    ROUND((15000 + ((c.id_canal * 137) % 70000))::NUMERIC, 2)
+FROM Canal c
+WHERE c.id_canal <= 80;
+
 -- =========================
 -- NivelCanal (agora usa id_canal)
 -- =========================
 
-INSERT INTO NivelCanal (id_canal, nivel, valor, gif)
+INSERT INTO NivelCanal (id_canal, nivel, nome_nivel, valor, gif)
 SELECT
     c.id_canal,
     n.nivel,
+    CASE n.nivel
+        WHEN 1 THEN 'Bronze'
+        WHEN 2 THEN 'Prata'
+        WHEN 3 THEN 'Ouro'
+        WHEN 4 THEN 'Platina'
+        ELSE        'Diamante'
+    END,
     CASE n.nivel
         WHEN 1 THEN  4.99
         WHEN 2 THEN  9.99
@@ -430,7 +497,7 @@ SELECT DISTINCT
     'user_' || i,
     ((ABS(HASHTEXT('user_' || i || c.nome)) % 5) + 1)::SMALLINT
 FROM Canal c
-CROSS JOIN generate_series(1, 900) AS i
+CROSS JOIN generate_series(1, 850) AS i
 WHERE (ABS(HASHTEXT('user_' || i || c.nome)) % 10) = 0
 LIMIT 1000;
 
@@ -466,7 +533,21 @@ SELECT
     (1000  + (i * 137) % 50000),
     (10000 + (i * 997) % 5000000)
 FROM Canal c
-CROSS JOIN generate_series(1, 10) AS i;
+CROSS JOIN generate_series(1, 8) AS i;
+
+UPDATE Canal c
+SET
+    qtd_videos = src.total_videos,
+    qtd_visualizacoes = src.total_visualizacoes
+FROM (
+    SELECT
+        id_canal,
+        COUNT(*) AS total_videos,
+        COALESCE(SUM(visu_total), 0) AS total_visualizacoes
+    FROM Video
+    GROUP BY id_canal
+) AS src
+WHERE src.id_canal = c.id_canal;
 
 -- =========================
 -- Participa
@@ -511,10 +592,16 @@ LIMIT 1000;
 -- Doacao (agora usa id_comentario)
 -- =========================
 
-INSERT INTO Doacao (id_comentario, seq_pg, valor, status)
+INSERT INTO Doacao (id_comentario, seq_pg, metodo, valor, status)
 SELECT
     c.id_comentario,
     1,
+    CASE (ABS(HASHTEXT(c.nick_usuario || c.id_video::TEXT)) % 4)
+        WHEN 0 THEN 'bitcoin'
+        WHEN 1 THEN 'paypal'
+        WHEN 2 THEN 'cartao_credito'
+        ELSE        'mecanismo_plataforma'
+    END,
     ROUND((5.00 + (ABS(HASHTEXT(c.nick_usuario || c.id_video::TEXT)) % 200))::NUMERIC, 2),
     CASE (ABS(HASHTEXT(c.nick_usuario)) % 3)
         WHEN 0 THEN 'recebido'
@@ -534,7 +621,7 @@ SELECT
     d.id_comentario, d.seq_pg,
     'btctxid_' || d.id_comentario || '_' || ABS(HASHTEXT(d.id_comentario::TEXT || d.seq_pg::TEXT))
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 0
+WHERE d.metodo = 'bitcoin'
 LIMIT 125;
 
 -- =========================
@@ -546,7 +633,7 @@ SELECT
     d.id_comentario, d.seq_pg,
     'PAYPAL-' || UPPER(SUBSTRING(MD5(d.id_comentario::TEXT), 1, 16))
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 1
+WHERE d.metodo = 'paypal'
 LIMIT 125;
 
 -- =========================
@@ -565,7 +652,7 @@ SELECT
     END,
     NOW() - ((ABS(HASHTEXT(d.id_comentario::TEXT)) % 365) || ' days')::INTERVAL
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 2
+WHERE d.metodo = 'cartao_credito'
 LIMIT 125;
 
 -- =========================
@@ -577,5 +664,5 @@ SELECT
     d.id_comentario, d.seq_pg,
     ROW_NUMBER() OVER (ORDER BY d.id_comentario)
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 3
+WHERE d.metodo = 'mecanismo_plataforma'
 LIMIT 125;
