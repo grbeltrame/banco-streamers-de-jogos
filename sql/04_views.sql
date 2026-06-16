@@ -17,7 +17,7 @@ SELECT
     c.id_canal,
     c.nome AS canal,
     p.nome AS plataforma,
-    c.nick_streamer,
+    c.id_streamer,
     pa.valor AS valor_patrocinio
 FROM Patrocinio pa
 JOIN Empresa e
@@ -29,21 +29,21 @@ JOIN Plataforma p
 
 CREATE VIEW vw_gastos_mensais_membros AS
 SELECT
-    i.nick_membro,
+    i.id_membro,
     COUNT(*) AS qtd_canais_membro,
     SUM(nc.valor) AS valor_total_mensal
 FROM Inscricao i
 JOIN NivelCanal nc
     ON nc.id_canal = i.id_canal
    AND nc.nivel = i.nivel
-GROUP BY i.nick_membro;
+GROUP BY i.id_membro;
 
 CREATE VIEW vw_doacoes_por_canal AS
 SELECT
     c.id_canal,
     c.nome AS canal,
     p.nome AS plataforma,
-    c.nick_streamer,
+    c.id_streamer,
     COUNT(*) AS qtd_doacoes_recebidas,
     SUM(d.valor) AS valor_total_doacoes_recebidas
 FROM Doacao d
@@ -60,7 +60,7 @@ GROUP BY
     c.id_canal,
     c.nome,
     p.nome,
-    c.nick_streamer;
+    c.id_streamer;
 
 CREATE VIEW vw_doacoes_lidas_por_video AS
 SELECT
@@ -122,7 +122,7 @@ SELECT
     c.id_canal,
     c.nome AS canal,
     p.nome AS plataforma,
-    c.nick_streamer,
+    c.id_streamer,
     COALESCE(pa.total_patrocinio, 0::NUMERIC) AS total_patrocinio,
     COALESCE(mb.total_membros, 0::NUMERIC) AS total_membros,
     COALESCE(doa.total_doacoes, 0::NUMERIC) AS total_doacoes,
