@@ -181,7 +181,7 @@ SELECT
 FROM generate_series(1, 900) AS i;
 
 -- =========================
--- StreamerPais  (agora usa id_usuario — JOIN com Usuario via nick)
+-- StreamerPais  (usa id_usuario — JOIN com Usuario via nick)
 -- =========================
 
 INSERT INTO StreamerPais (id_usuario, ddi_pais, nro_passaporte)
@@ -235,7 +235,7 @@ FROM generate_series(1, 70) AS i
 JOIN Usuario u ON u.nick = 'streamer_' || i;
 
 -- =========================
--- PlataformaUsuario  (agora usa id_usuario)
+-- PlataformaUsuario  (usa id_usuario)
 -- =========================
 
 INSERT INTO PlataformaUsuario (nro_plataforma, id_usuario, nro_usuario)
@@ -316,7 +316,7 @@ FROM generate_series(1, 900) AS i
 JOIN Usuario u ON u.nick = 'user_' || i;
 
 -- =========================
--- Canal  (agora usa id_streamer)
+-- Canal  (usa id_streamer)
 -- =========================
 
 INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, id_streamer)
@@ -388,7 +388,7 @@ FROM generate_series(1, 70) AS i
 JOIN Usuario u ON u.nick = 'streamer_' || i;
 
 -- =========================
--- Patrocinio (usa id_canal — JOIN via nome+plataforma)
+-- Patrocinio (usa id_canal)
 -- =========================
 
 INSERT INTO Patrocinio (nro_empresa, id_canal, valor)
@@ -421,10 +421,17 @@ JOIN Canal c ON c.nome = t.nome_canal AND c.nro_plataforma = t.nro_plataforma;
 -- NivelCanal (usa id_canal)
 -- =========================
 
-INSERT INTO NivelCanal (id_canal, nivel, valor, gif)
+INSERT INTO NivelCanal (id_canal, nivel, nome_nivel, valor, gif)
 SELECT
     c.id_canal,
     n.nivel,
+    CASE n.nivel
+        WHEN 1 THEN 'Bronze'
+        WHEN 2 THEN 'Prata'
+        WHEN 3 THEN 'Ouro'
+        WHEN 4 THEN 'Platina'
+        WHEN 5 THEN 'Diamante'
+    END,
     CASE n.nivel
         WHEN 1 THEN  4.99
         WHEN 2 THEN  9.99
@@ -525,13 +532,19 @@ CROSS JOIN (SELECT id_usuario, nick FROM Usuario WHERE nick LIKE 'user_%' LIMIT 
 LIMIT 1000;
 
 -- =========================
--- Doacao (usa id_comentario)
+-- Doacao (usa id_comentario; metodo determina tabela de pagamento)
 -- =========================
 
-INSERT INTO Doacao (id_comentario, seq_pg, valor, status)
+INSERT INTO Doacao (id_comentario, seq_pg, metodo, valor, status)
 SELECT
     c.id_comentario,
     1,
+    CASE (ABS(HASHTEXT(c.id_usuario::TEXT || c.id_video::TEXT)) % 4)
+        WHEN 0 THEN 'bitcoin'
+        WHEN 1 THEN 'paypal'
+        WHEN 2 THEN 'cartao_credito'
+        ELSE        'mecanismo_plataforma'
+    END,
     ROUND((5.00 + (ABS(HASHTEXT(c.id_usuario::TEXT || c.id_video::TEXT)) % 200))::NUMERIC, 2),
     CASE (ABS(HASHTEXT(c.id_usuario::TEXT)) % 3)
         WHEN 0 THEN 'recebido'
@@ -543,7 +556,7 @@ WHERE c.id_video % 2 = 0
 LIMIT 500;
 
 -- =========================
--- Bitcoin (usa id_comentario)
+-- Bitcoin
 -- =========================
 
 INSERT INTO Bitcoin (id_comentario, seq_doacao, TxID)
@@ -551,11 +564,10 @@ SELECT
     d.id_comentario, d.seq_pg,
     'btctxid_' || d.id_comentario || '_' || ABS(HASHTEXT(d.id_comentario::TEXT || d.seq_pg::TEXT))
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 0
-LIMIT 125;
+WHERE d.metodo = 'bitcoin';
 
 -- =========================
--- PayPal (usa id_comentario)
+-- PayPal
 -- =========================
 
 INSERT INTO PayPal (id_comentario, seq_doacao, IdPayPal)
@@ -563,11 +575,10 @@ SELECT
     d.id_comentario, d.seq_pg,
     'PAYPAL-' || UPPER(SUBSTRING(MD5(d.id_comentario::TEXT), 1, 16))
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 1
-LIMIT 125;
+WHERE d.metodo = 'paypal';
 
 -- =========================
--- CartaoCredito (usa id_comentario)
+-- CartaoCredito
 -- =========================
 
 INSERT INTO CartaoCredito (id_comentario, seq_doacao, nro, bandeira, dataH)
@@ -582,11 +593,10 @@ SELECT
     END,
     NOW() - ((ABS(HASHTEXT(d.id_comentario::TEXT)) % 365) || ' days')::INTERVAL
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 2
-LIMIT 125;
+WHERE d.metodo = 'cartao_credito';
 
 -- =========================
--- MecanismoPlat (usa id_comentario)
+-- MecanismoPlat
 -- =========================
 
 INSERT INTO MecanismoPlat (id_comentario, seq_doacao, seq_plataforma)
@@ -594,5 +604,4 @@ SELECT
     d.id_comentario, d.seq_pg,
     ROW_NUMBER() OVER (ORDER BY d.id_comentario)
 FROM Doacao d
-WHERE (ABS(HASHTEXT(d.id_comentario::TEXT)) % 4) = 3
-LIMIT 125;
+WHERE d.metodo = 'mecanismo_plataforma';
