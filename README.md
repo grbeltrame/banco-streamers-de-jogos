@@ -4,11 +4,11 @@ Documentação das decisões de implementação tomadas pelo grupo ao longo da c
 
 ## Sobre o que veio do professor e o que foi decisão do grupo
 
-O professor entregou o modelo ER e o modelo relacional já prontos, incluindo todas as tabelas, atributos e relacionamentos. O grupo optou por não alterar a estrutura conceitual do banco — apenas  traduzi-la em SQL e tomar decisões de implementação que o modelo relacional não especifica, como tipos de dado, índices artificiais, constraints e estratégia de população. Cada seção abaixo indica explicitamente se a decisão partiu do professor ou do grupo.
+O professor entregou o modelo ER e o modelo relacional já prontos, incluindo todas as tabelas, atributos e relacionamentos. O grupo optou por não alterar a estrutura conceitual do banco — apenas traduzi-la em SQL e tomar decisões de implementação que o modelo relacional não especifica, como tipos de dado, índices artificiais, constraints e estratégia de população. Cada seção abaixo indica explicitamente se a decisão partiu do professor ou do grupo.
 
 ## Abordagem incremental e organização dos arquivos
 
-O grupo decidiu construir o banco em etapas separadas, cada uma em um arquivo `.sql` próprio dentro da pasta `sql/`: `01_schema.sql` para a criação das tabelas, `02_dados.sql` para a população, e os arquivos `03_indices.sql`, `04_views.sql`, `05_triggers.sql` e `06_functions.sql` para as etapas seguintes, criados conforme o conteúdo correspondente for visto em aula. Essa separação evita um único arquivo gigante e facilita que os cinco integrantes do grupo trabalhem em paralelo sem conflitos constantes no Git.
+O grupo decidiu construir o banco em etapas separadas, cada uma em um arquivo `.sql` próprio dentro da pasta `sql/`: `01_schema.sql` para a criação das tabelas, `02_dados.sql` para a população, e os arquivos `03_indices.sql`, `04_views.sql`, `05_triggers.sql`, `06_functions.sql` e `07_consultas.sql` para as etapas seguintes. Essa separação evita um único arquivo gigante e facilita que os cinco integrantes do grupo trabalhem em paralelo sem conflitos constantes no Git.
 
 ## Ambiente de desenvolvimento
 
@@ -42,7 +42,7 @@ Para os demais atributos, seguiu-se a convenção: `VARCHAR(n)` para textos com 
 
 ## Constraints de integridade
 
-O grupo usou `CHECK` para campos cujo domínio de valores é fixo e enumerável, garantindo que o próprio banco rejeite valores inválidos sem depender de validação na aplicação. Isso foi aplicado ao tipo de canal (`privado`, `publico`, `misto`), ao nível de membro (`1` a `5`) e ao status da doação (`recusado`, `recebido`, `lido`) — todos definidos explicitamente pelo professor no enunciado.
+O grupo usou `CHECK` para campos cujo domínio de valores é fixo e enumerável, garantindo que o próprio banco rejeite valores inválidos sem depender de validação na aplicação. Isso foi aplicado ao tipo de canal (`privado`, `publico`, `misto`), ao nível de membro (`1` a `5`), ao status da doação (`recusado`, `recebido`, `lido`) e ao método de pagamento (`bitcoin`, `paypal`, `cartao_credito`, `mecanismo_plataforma`) — todos definidos explicitamente pelo professor no enunciado. O grupo também adicionou CHECKs de não-negatividade em contadores (`qtd_users`, `qtd_videos`, `qtd_visualizacoes`, `visu_simul`, `visu_total`) e CHECKs de valor positivo em campos financeiros (`fator_conver`, `valor` em Patrocinio e NivelCanal).
 
 Em paralelo aos identificadores artificiais, o grupo manteve constraints `UNIQUE` sobre as combinações de atributos que formavam a chave natural original, preservando a regra de negócio mesmo após a simplificação da chave primária. Por exemplo, mesmo com `id_video` como chave primária de `Video`, a combinação `(id_canal, titulo, dataH)` permanece `UNIQUE`, garantindo que um canal não publique dois vídeos com o mesmo título no mesmo instante. O mesmo padrão se repete em `Canal` (`nome, nro_plataforma`) e `Comentario` (`id_video, id_usuario, seq`).
 
@@ -56,13 +56,19 @@ O professor exige entre 100 e 1000 tuplas por tabela, aceitando dados artificiai
 
 Para o volume restante necessário para atingir a faixa de 100 a 1000 tuplas, o grupo usou `generate_series` do PostgreSQL para gerar registros em lote (usuários comuns, streamers adicionais, vídeos, comentários), evitando escrever centenas de instruções `INSERT` manuais quase idênticas.
 
-Um caso específico tratado durante a população foi o DDI do Canadá, que no mundo real é compartilhado com os Estados Unidos (+1). Como `ddi` é chave primária da tabela `Pais` e não pode se repetir, o grupo optou por deixar o Canadá de fora da população por ora, registrando a decisão em comentário no próprio arquivo SQL, em vez de inventar um DDI fictício para contornar o conflito.
+Um caso específico tratado durante a população foi o DDI do Canadá, que no mundo real é compartilhado com os Estados Unidos (+1). Como `ddi` é chave primária da tabela `Pais` e não pode se repetir, o grupo optou por deixar o Canadá de fora da população, registrando a decisão em comentário no próprio arquivo SQL, em vez de inventar um DDI fictício para contornar o conflito.
 
-Para o campo `gif` em `NivelCanal` — que o professor exige como um arquivo de imagem associado a cada nível de membro — o grupo optou por representar o valor como um caminho relativo fictício (por exemplo, `gifs/gaules_nivel1.gif`) em vez de uma URL `https://` completa, por ser mais honesto quanto à natureza fictícia do dado: o banco armazena apenas o texto do caminho, sem que ele aponte para um arquivo real.
+Para o campo `gif` em `NivelCanal` — que o professor exige como um arquivo de imagem associado a cada nível de membro — o grupo optou por representar o valor como um caminho relativo fictício (por exemplo, `gifs/gaules_nivel1.gif`) em vez de uma URL `https://` completa, por ser mais honesto quanto à natureza fictícia do dado.
+
+O campo `metodo` em `Doacao` foi adicionado pelo grupo para registrar explicitamente qual forma de pagamento foi usada em cada doação (`bitcoin`, `paypal`, `cartao_credito`, `mecanismo_plataforma`). Os INSERTs nas subtabelas de pagamento (`Bitcoin`, `PayPal`, `CartaoCredito`, `MecanismoPlat`) usam `WHERE d.metodo = '...'` para garantir que cada doação vá para a subtabela correta — evitando o bug de uma doação com `metodo = 'bitcoin'` ser inserida por engano em `PayPal`.
 
 ## Status de vigência (sem histórico)
 
-O professor especifica explicitamente que `Patrocinio` e `Inscricao` não devem manter histórico — apenas patrocínios e assinaturas vigentes devem aparecer no sistema. Essa regra já está refletida na própria estrutura das tabelas (cada combinação empresa-canal ou canal-membro aparece uma única vez, sem campo de data de início/fim), mas ainda não há um mecanismo automático (trigger) que remova ou substitua um registro quando um patrocínio ou uma assinatura deixam de ser vigentes — esse tratamento é um dos itens previstos para a etapa de triggers.
+O professor especifica explicitamente que `Patrocinio` e `Inscricao` não devem manter histórico — apenas patrocínios e assinaturas vigentes devem aparecer no sistema.
+
+Para `Patrocinio`: a própria PK `(nro_empresa, id_canal)` já garante que a mesma empresa não patrocina o mesmo canal duas vezes simultaneamente. O professor não proíbe múltiplos patrocinadores para o mesmo canal ao mesmo tempo, portanto nenhum trigger adicional é necessário — a constraint já resolve.
+
+Para `Inscricao`: a PK `(id_canal, id_membro)` impede duplicatas, mas causaria falha de PK se um membro tentasse trocar de nível (novo INSERT com mesma PK). O trigger `tg_substitui_inscricao` resolve isso removendo a inscrição anterior antes do INSERT, tornando a troca de nível transparente.
 
 ## Índices de apoio (`03_indices.sql`)
 
@@ -77,7 +83,6 @@ A partir dos resultados, o grupo adotou três critérios para justificar a cria�
 3. **Seletividade**: o índice precisa filtrar uma parte significativa das linhas — ou seja, a condição deve descartar a maioria das linhas da tabela. Se quase todas as linhas passam pelo filtro, o Seq Scan continua sendo mais eficiente.
 
 O professor exige explicitamente que o overhead de inserção seja considerado. Para cada índice criado, o grupo avaliou se o custo de manter o índice atualizado a cada INSERT é justificado pelo ganho nas consultas de leitura.
-
 
 ### Índices criados
 
@@ -129,7 +134,7 @@ O professor exige a construção de visões virtuais e materializadas. Uma view 
 
 **View 1 — `vw_canais_patrocinados`**
 
-Responde diretamente à consulta 1 do professor: quais canais são patrocinados, por qual empresa e qual o valor. Reúne `Patrocinio`, `Empresa`, `Canal` e `Plataforma` em uma view simples para evitar que esse join de 4 tabelas seja reescrito em cada consulta ou função que precise dessa informação. Foi criada como view virtual porque o conjunto de patrocínios pode mudar (o professor especifica que apenas patrocínios vigentes aparecem no sistema).
+Responde diretamente à consulta 1 do professor: quais canais são patrocinados, por qual empresa e qual o valor. Reúne `Patrocinio`, `Empresa`, `Canal` e `Plataforma` em uma view simples para evitar que esse join de 4 tabelas seja reescrito em cada consulta ou função que precise dessa informação. Foi criada como view virtual porque o conjunto de patrocínios pode mudar.
 
 **View 2 — `vw_gastos_mensais_membros`**
 
@@ -145,10 +150,69 @@ Responde à consulta 4: soma das doações de comentários lidos, agrupada por v
 
 **View Materializada 5 — `mv_receita_total_canal`**
 
-Responde à consulta 8: faturamento total de cada canal combinando as três fontes de receita (patrocínio + membros + doações). É a consulta mais pesada do banco — envolve subconsultas sobre `Patrocinio`, `Inscricao`, `NivelCanal`, `Doacao`, `Comentario` e `Video` ao mesmo tempo. Por ser custosa e não precisar de dados em tempo real (faturamento total é tipicamente consultado em relatórios periódicos), foi criada como view materializada. Para atualizar os dados após inserções, basta executar:
+Responde à consulta 8: faturamento total de cada canal combinando as três fontes de receita (patrocínio + membros + doações). É a consulta mais pesada do banco — envolve subconsultas sobre `Patrocinio`, `Inscricao`, `NivelCanal`, `Doacao`, `Comentario` e `Video` ao mesmo tempo. Por ser custosa e não precisar de dados em tempo real, foi criada como view materializada. Os triggers de `05_triggers.sql` disparam `REFRESH MATERIALIZED VIEW` automaticamente após qualquer alteração nas tabelas-fonte, mantendo a view sempre atualizada.
 
-```sql
-REFRESH MATERIALIZED VIEW streaming.mv_receita_total_canal;
-```
+Observação: `REFRESH` sem `CONCURRENTLY` bloqueia leituras da view durante a atualização. Em uma base de produção maior, valeria criar um índice `UNIQUE` na view e usar `REFRESH MATERIALIZED VIEW CONCURRENTLY`.
 
-Essa atualização deve ser incluída nos triggers de inserção de doações, inscrições e patrocínios na etapa de triggers, garantindo que a view permaneça consistente com os dados.
+## Triggers (`05_triggers.sql`)
+
+Os triggers foram definidos para manter a consistência de atributos derivados, garantir regras de vigência e validar integridade entre tabelas relacionadas.
+
+**Trigger 1 — `tg_atualiza_qtd_users` em `PlataformaUsuario`**
+
+Mantém `Plataforma.qtd_users` sincronizado com o número real de usuários cadastrados em cada plataforma. Dispara após INSERT (incrementa) e DELETE (decrementa). Sem esse trigger, `qtd_users` ficaria desatualizado e consultas sobre o tamanho das plataformas retornariam valores incorretos. O atributo derivado foi sinalizado pelo próprio professor no modelo relacional.
+
+**Trigger 2 — `tg_atualiza_qtd_videos` em `Video`**
+
+Mantém `Canal.qtd_videos` sincronizado a cada vídeo postado ou removido. Dispara após INSERT e DELETE em `Video`. Mesmo justificativa do trigger 1 — atributo derivado sinalizado pelo professor.
+
+**Trigger 3 — `tg_atualiza_qtd_visualizacoes` em `Video`**
+
+Mantém `Canal.qtd_visualizacoes` como a soma de `Video.visu_total` de todos os vídeos do canal. Dispara após INSERT e após UPDATE de `visu_total`, recalculando o total via `SUM`. Atributo derivado sinalizado pelo professor.
+
+**Trigger 4 — `tg_substitui_inscricao` em `Inscricao`**
+
+Garante que cada membro tenha apenas uma inscrição vigente por canal. Antes de cada INSERT, remove a inscrição anterior do mesmo membro naquele canal, permitindo troca de nível sem violação de PK. O professor especifica que o sistema não armazena histórico de membros.
+
+**Trigger 5 — `tg_valida_bitcoin`, `tg_valida_paypal`, `tg_valida_cartao`, `tg_valida_mecplat`**
+
+Quatro triggers sobre as subtabelas de pagamento que compartilham a mesma função `fn_valida_subtabela_doacao`. Verificam que o campo `metodo` da `Doacao` referenciada corresponde à subtabela onde o INSERT está sendo feito — impedindo que uma doação com `metodo = 'bitcoin'` seja inserida por engano em `PayPal`, por exemplo. Nenhuma constraint declarativa do PostgreSQL consegue expressar essa regra entre tabelas distintas.
+
+**Trigger 6 — `tg_refresh_receita_*` em `Patrocinio`, `Inscricao`, `Doacao`, `NivelCanal`**
+
+Quatro triggers `FOR EACH STATEMENT` que disparam `REFRESH MATERIALIZED VIEW mv_receita_total_canal` após qualquer INSERT, UPDATE ou DELETE nas quatro tabelas que alimentam a view. Inclui `NivelCanal` porque uma mudança no valor de um nível afeta diretamente o total de membros agregado na view.
+
+## Functions e Procedures (`06_functions.sql` e `07_consultas.sql`)
+
+### Decisão de implementação: functions com RETURNS TABLE
+
+O PostgreSQL distingue `FUNCTION` de `PROCEDURE`: uma procedure não devolve um conjunto de linhas diretamente — só devolve valores via parâmetros `OUT` ou via cursor `REFCURSOR`. Como todas as 8 consultas pedem uma listagem de linhas, o grupo implementou todas primeiro como `FUNCTION` com `RETURNS TABLE`, que pode ser chamada diretamente com `SELECT * FROM fn_xxx(...)`. O enunciado permite essa escolha explicitamente ("functions ou stored procedures").
+
+### Arquitetura em camadas
+
+O grupo adotou uma arquitetura em três camadas para evitar duplicação de lógica:
+
+1. As views de `04_views.sql` concentram os JOINs e GROUP BYs.
+2. As functions de `06_functions.sql` filtram, ordenam e paginam sobre essas views.
+3. As procedures de `07_consultas.sql` encapsulam as functions via REFCURSOR para quem prefere o estilo `CALL + FETCH`.
+
+Qualquer correção de regra de negócio — como o filtro de doações com status `recusado` — é escrita uma única vez nas views e vale automaticamente para functions e procedures.
+
+### Padrão de filtro opcional (consultas 1 a 4)
+
+O parâmetro recebe `DEFAULT NULL`, e a cláusula `WHERE` usa `p_parametro IS NULL OR coluna = p_parametro`. Quando o parâmetro não é informado, a condição `IS NULL` é verdadeira para todas as linhas e a function devolve o resultado completo; quando é informado, filtra exatamente o registro pedido. Esse padrão evita duplicar a lógica em uma versão "com filtro" e outra "sem filtro".
+
+### Validação de p_k (consultas 5 a 8)
+
+As functions de ranking recebem `p_k INT` obrigatório e lançam `RAISE EXCEPTION` se o valor for nulo ou menor que 1. Essa validação existe apenas nas functions — as procedures não a repetem, pois o erro é propagado naturalmente quando a procedure chama a function internamente.
+
+### Functions criadas
+
+- `fn_canais_patrocinados(p_nro_empresa)` — consulta 1
+- `fn_gastos_mensais_membros(p_id_usuario)` — consulta 2
+- `fn_doacoes_por_canal(p_id_canal)` — consulta 3
+- `fn_doacoes_lidas_por_video(p_id_video)` — consulta 4
+- `fn_top_canais_patrocinio(p_k)` — consulta 5
+- `fn_top_canais_membros(p_k)` — consulta 6
+- `fn_top_canais_doacoes(p_k)` — consulta 7
+- `fn_top_canais_faturamento(p_k)` — consulta 8
