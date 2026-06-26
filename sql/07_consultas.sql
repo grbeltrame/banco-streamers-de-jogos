@@ -39,11 +39,6 @@ SET search_path TO streaming;
 -- =========================================================================
 -- Procedure 1 — Canais patrocinados e valores de patrocínio, por empresa
 -- =========================================================================
--- Encapsula: fn_canais_patrocinados (06_functions.sql), que por sua vez
--- usa vw_canais_patrocinados (04_views.sql).
--- Parâmetro opcional p_nro_empresa: NULL → todas as empresas;
---                                   valor → somente aquela empresa.
--- =========================================================================
 CREATE OR REPLACE PROCEDURE sp_canais_patrocinados(
     INOUT p_cursor      REFCURSOR DEFAULT 'cur_canais_patrocinados',
     IN    p_nro_empresa INT       DEFAULT NULL
@@ -71,11 +66,6 @@ $$;
 
 -- =========================================================================
 -- Procedure 2 — Quantidade de canais por usuário-membro e gasto mensal
--- =========================================================================
--- Encapsula: fn_gastos_mensais_membros (06_functions.sql), que usa
--- vw_gastos_mensais_membros (04_views.sql) + join com Usuario.
--- Parâmetro opcional p_id_usuario: NULL → todos os membros;
---                                  valor → somente aquele usuário.
 -- =========================================================================
 CREATE OR REPLACE PROCEDURE sp_gastos_mensais_membros(
     INOUT p_cursor     REFCURSOR DEFAULT 'cur_gastos_mensais',
@@ -105,12 +95,6 @@ $$;
 -- =========================================================================
 -- Procedure 3 — Canais que receberam doações e soma dos valores recebidos
 -- =========================================================================
--- Encapsula: fn_doacoes_por_canal (06_functions.sql), que usa
--- vw_doacoes_por_canal (04_views.sql) — já exclui doações com status
--- 'recusado' (ver README).
--- Parâmetro opcional p_id_canal: NULL → todos os canais;
---                                valor → somente aquele canal.
--- =========================================================================
 CREATE OR REPLACE PROCEDURE sp_doacoes_por_canal(
     INOUT p_cursor   REFCURSOR DEFAULT 'cur_doacoes_canal',
     IN    p_id_canal INT       DEFAULT NULL
@@ -138,11 +122,6 @@ $$;
 
 -- =========================================================================
 -- Procedure 4 — Soma das doações de comentários lidos, por vídeo
--- =========================================================================
--- Encapsula: fn_doacoes_lidas_por_video (06_functions.sql), que usa
--- vw_doacoes_lidas_por_video (04_views.sql) — filtra status = 'lido'.
--- Parâmetro opcional p_id_video: NULL → todos os vídeos;
---                                valor → somente aquele vídeo.
 -- =========================================================================
 CREATE OR REPLACE PROCEDURE sp_doacoes_lidas_por_video(
     INOUT p_cursor   REFCURSOR DEFAULT 'cur_doacoes_video',
@@ -172,14 +151,10 @@ $$;
 -- =========================================================================
 -- Procedure 5 — Top-k canais por valor de patrocínio
 -- =========================================================================
--- Encapsula: fn_top_canais_patrocinio (06_functions.sql). A validação de
--- p_k > 0 já é feita dentro da function — se p_k for inválido, o erro é
--- levantado lá e propagado normalmente para quem chamou a procedure.
--- Parâmetro obrigatório p_k: inteiro positivo (tamanho do ranking).
--- =========================================================================
+-- Correção: p_k (sem default) deve vir antes de p_cursor (com default)
 CREATE OR REPLACE PROCEDURE sp_top_canais_patrocinio(
-    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_patrocinio',
-    IN    p_k      INT
+    IN    p_k      INT,
+    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_patrocinio'
 )
 LANGUAGE plpgsql
 SET search_path = streaming, pg_temp
@@ -192,7 +167,12 @@ $$;
 
 -- Exemplo de chamada:
 -- BEGIN;
--- CALL sp_top_canais_patrocinio('cur', 10);    -- top-10
+-- CALL sp_top_canais_patrocinio(10);           -- top-10
+-- FETCH ALL FROM cur_top_patrocinio;
+-- COMMIT;
+--
+-- BEGIN;
+-- CALL sp_top_canais_patrocinio(10, 'cur');    -- cursor nomeado
 -- FETCH ALL FROM cur;
 -- COMMIT;
 
@@ -200,15 +180,10 @@ $$;
 -- =========================================================================
 -- Procedure 6 — Top-k canais por aportes de membros
 -- =========================================================================
--- Encapsula: fn_top_canais_membros (06_functions.sql), que repete o join
--- agregado Inscricao + NivelCanal + Canal + Plataforma (sem view
--- equivalente, pois vw_gastos_mensais_membros agrega por usuário, não
--- por canal).
--- Parâmetro obrigatório p_k: inteiro positivo (tamanho do ranking).
--- =========================================================================
+-- Correção: p_k (sem default) deve vir antes de p_cursor (com default)
 CREATE OR REPLACE PROCEDURE sp_top_canais_membros(
-    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_membros',
-    IN    p_k      INT
+    IN    p_k      INT,
+    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_membros'
 )
 LANGUAGE plpgsql
 SET search_path = streaming, pg_temp
@@ -221,21 +196,18 @@ $$;
 
 -- Exemplo de chamada:
 -- BEGIN;
--- CALL sp_top_canais_membros('cur', 10);       -- top-10
--- FETCH ALL FROM cur;
+-- CALL sp_top_canais_membros(10);              -- top-10
+-- FETCH ALL FROM cur_top_membros;
 -- COMMIT;
 
 
 -- =========================================================================
 -- Procedure 7 — Top-k canais por doações (todos os vídeos)
 -- =========================================================================
--- Encapsula: fn_top_canais_doacoes (06_functions.sql), que usa
--- vw_doacoes_por_canal (04_views.sql), já agregada por canal.
--- Parâmetro obrigatório p_k: inteiro positivo (tamanho do ranking).
--- =========================================================================
+-- Correção: p_k (sem default) deve vir antes de p_cursor (com default)
 CREATE OR REPLACE PROCEDURE sp_top_canais_doacoes(
-    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_doacoes',
-    IN    p_k      INT
+    IN    p_k      INT,
+    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_doacoes'
 )
 LANGUAGE plpgsql
 SET search_path = streaming, pg_temp
@@ -248,25 +220,18 @@ $$;
 
 -- Exemplo de chamada:
 -- BEGIN;
--- CALL sp_top_canais_doacoes('cur', 10);       -- top-10
--- FETCH ALL FROM cur;
+-- CALL sp_top_canais_doacoes(10);              -- top-10
+-- FETCH ALL FROM cur_top_doacoes;
 -- COMMIT;
 
 
 -- =========================================================================
 -- Procedure 8 — Top-k canais por faturamento total (3 fontes de receita)
 -- =========================================================================
--- Encapsula: fn_top_canais_faturamento (06_functions.sql), que usa
--- mv_receita_total_canal (view MATERIALIZADA de 04_views.sql).
--- Parâmetro obrigatório p_k: inteiro positivo (tamanho do ranking).
---
--- ATENÇÃO: os triggers de 05_triggers.sql disparam REFRESH da view
--- materializada automaticamente após inserções em Patrocinio, Inscricao
--- e Doacao, mantendo os dados sempre atualizados.
--- =========================================================================
+-- Correção: p_k (sem default) deve vir antes de p_cursor (com default)
 CREATE OR REPLACE PROCEDURE sp_top_canais_faturamento(
-    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_faturamento',
-    IN    p_k      INT
+    IN    p_k      INT,
+    INOUT p_cursor REFCURSOR DEFAULT 'cur_top_faturamento'
 )
 LANGUAGE plpgsql
 SET search_path = streaming, pg_temp
@@ -279,6 +244,6 @@ $$;
 
 -- Exemplo de chamada:
 -- BEGIN;
--- CALL sp_top_canais_faturamento('cur', 10);   -- top-10
--- FETCH ALL FROM cur;
+-- CALL sp_top_canais_faturamento(10);          -- top-10
+-- FETCH ALL FROM cur_top_faturamento;
 -- COMMIT;

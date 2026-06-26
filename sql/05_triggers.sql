@@ -7,7 +7,6 @@ SET search_path TO streaming;
 DROP TRIGGER IF EXISTS tg_atualiza_qtd_users         ON PlataformaUsuario;
 DROP TRIGGER IF EXISTS tg_atualiza_qtd_videos        ON Video;
 DROP TRIGGER IF EXISTS tg_atualiza_qtd_visualizacoes ON Video;
-DROP TRIGGER IF EXISTS tg_substitui_patrocinio       ON Patrocinio;
 DROP TRIGGER IF EXISTS tg_substitui_inscricao        ON Inscricao;
 DROP TRIGGER IF EXISTS tg_valida_bitcoin             ON Bitcoin;
 DROP TRIGGER IF EXISTS tg_valida_paypal              ON PayPal;
@@ -16,11 +15,11 @@ DROP TRIGGER IF EXISTS tg_valida_mecplat             ON MecanismoPlat;
 DROP TRIGGER IF EXISTS tg_refresh_receita_patrocinio ON Patrocinio;
 DROP TRIGGER IF EXISTS tg_refresh_receita_inscricao  ON Inscricao;
 DROP TRIGGER IF EXISTS tg_refresh_receita_doacao     ON Doacao;
+DROP TRIGGER IF EXISTS tg_refresh_receita_nivelcanal ON NivelCanal;
 
 DROP FUNCTION IF EXISTS fn_atualiza_qtd_users();
 DROP FUNCTION IF EXISTS fn_atualiza_qtd_videos();
 DROP FUNCTION IF EXISTS fn_atualiza_qtd_visualizacoes();
-DROP FUNCTION IF EXISTS fn_substitui_patrocinio();
 DROP FUNCTION IF EXISTS fn_substitui_inscricao();
 DROP FUNCTION IF EXISTS fn_valida_subtabela_doacao();
 DROP FUNCTION IF EXISTS fn_refresh_receita_total_canal();
@@ -128,45 +127,18 @@ EXECUTE FUNCTION fn_atualiza_qtd_visualizacoes();
 
 
 -- =========================================================================
--- TRIGGER 4 — Patrocínio vigente (sistema não armazena histórico)
+-- TRIGGER 4 — Inscrição (membro) vigente (sistema não armazena histórico)
 -- =========================================================================
--- O enunciado define que "apenas os patrocinadores com patrocínios
--- vigentes devem aparecer no sistema". Como Patrocinio(nro_empresa,
--- id_canal) é PK composta, nada impediria, a princípio, que um mesmo
--- canal acumulasse vários patrocinadores simultâneos ao longo do tempo.
--- Este trigger garante que um canal tenha no máximo um patrocinador
--- vigente: ao inserir um novo patrocínio para um canal, qualquer
--- patrocínio anterior daquele canal (de outra empresa) é removido.
-CREATE OR REPLACE FUNCTION fn_substitui_patrocinio()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SET search_path = streaming, pg_temp
-AS $$
-BEGIN
-    DELETE FROM Patrocinio
-     WHERE id_canal = NEW.id_canal
-       AND nro_empresa <> NEW.nro_empresa;
-
-    RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER tg_substitui_patrocinio
-BEFORE INSERT ON Patrocinio
-FOR EACH ROW
-EXECUTE FUNCTION fn_substitui_patrocinio();
-
-
--- =========================================================================
--- TRIGGER 5 — Inscrição (membro) vigente (sistema não armazena histórico)
--- =========================================================================
--- Mesma regra de negócio do trigger anterior, agora para membros: "o
--- sistema não armazena o histórico de membros, ou seja, apenas os
--- membros vigentes devem aparecer no sistema". A PK (id_canal, id_membro)
--- já impede duas linhas idênticas, mas não impede o INSERT de falhar por
--- violação de PK quando o membro troca de nível. Este trigger remove a
--- inscrição anterior antes do INSERT, tornando a troca de nível
--- transparente para quem está inserindo.
+-- O enunciado define que "o sistema não armazena o histórico de membros,
+-- ou seja, apenas os membros vigentes devem aparecer no sistema". A PK
+-- (id_canal, id_membro) já impede duas linhas idênticas, mas não impede
+-- o INSERT de falhar por violação de PK quando o membro troca de nível.
+-- Este trigger remove a inscrição anterior antes do INSERT, tornando a
+-- troca de nível transparente para quem está inserindo.
+-- Nota: para Patrocinio, a própria PK (nro_empresa, id_canal) já garante
+-- que a mesma empresa não patrocina o mesmo canal duas vezes — e o
+-- enunciado não proíbe múltiplos patrocinadores simultâneos para um
+-- mesmo canal, portanto nenhum trigger adicional é necessário lá.
 CREATE OR REPLACE FUNCTION fn_substitui_inscricao()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -188,16 +160,14 @@ EXECUTE FUNCTION fn_substitui_inscricao();
 
 
 -- =========================================================================
--- TRIGGER 6 — Consistência entre Doacao.metodo e a subtabela de pagamento
+-- TRIGGER 5 — Consistência entre Doacao.metodo e a subtabela de pagamento
 -- =========================================================================
--- O schema final guarda o método de pagamento diretamente em
--- Doacao.metodo (um CHECK já garante que só assume um dos 4 valores
--- possíveis). O que nenhuma constraint declarativa garante é a ligação
--- entre Doacao e a subtabela específica correspondente (Bitcoin/PayPal/
--- CartaoCredito/MecanismoPlat): nada impede, a princípio, que uma doação
--- com metodo = 'bitcoin' seja inserida por engano em PayPal. Este
--- trigger atua nas 4 subtabelas e verifica, a cada INSERT, se o metodo
--- da Doacao referenciada corresponde à subtabela de destino.
+-- O schema guarda o método de pagamento em Doacao.metodo (CHECK garante
+-- apenas os 4 valores possíveis). O que nenhuma constraint declarativa
+-- garante é a ligação entre Doacao e a subtabela específica: nada impede
+-- que uma doação com metodo = 'bitcoin' seja inserida por engano em
+-- PayPal. Este trigger atua nas 4 subtabelas e verifica, a cada INSERT,
+-- se o metodo da Doacao referenciada corresponde à subtabela de destino.
 CREATE OR REPLACE FUNCTION fn_valida_subtabela_doacao()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -257,18 +227,18 @@ EXECUTE FUNCTION fn_valida_subtabela_doacao();
 
 
 -- =========================================================================
--- TRIGGER 7 — Refresh de mv_receita_total_canal
+-- TRIGGER 6 — Refresh de mv_receita_total_canal
 -- =========================================================================
--- mv_receita_total_canal (04_views.sql) soma patrocínio + membros +
--- doações por canal e é usada por fn_top_canais_faturamento
--- (06_functions.sql). Por ser MATERIALIZADA, seus valores não atualizam
--- sozinhos a cada INSERT/UPDATE/DELETE nas três tabelas-fonte de
--- receita. Este trigger dispara REFRESH (uma vez por comando, via FOR
--- EACH STATEMENT) após qualquer alteração em Patrocinio, Inscricao ou
--- Doacao, garantindo que a função 8 nunca devolva valores desatualizados.
--- Observação registrada no README: REFRESH (sem CONCURRENTLY) bloqueia
--- leituras da view durante a atualização; em uma base maior valeria criar
--- um índice UNIQUE na view e usar REFRESH ... CONCURRENTLY.
+-- mv_receita_total_canal soma patrocínio + membros + doações por canal e
+-- é usada por fn_top_canais_faturamento (06_functions.sql). Por ser
+-- MATERIALIZADA, seus valores não atualizam sozinhos a cada mudança nas
+-- tabelas-fonte. Este trigger dispara REFRESH após qualquer alteração em
+-- Patrocinio, Inscricao, Doacao e NivelCanal — incluindo NivelCanal
+-- porque uma mudança no valor de um nível afeta diretamente o total de
+-- membros agregado na view.
+-- Observação: REFRESH sem CONCURRENTLY bloqueia leituras da view durante
+-- a atualização; em uma base maior valeria criar um índice UNIQUE na view
+-- e usar REFRESH ... CONCURRENTLY.
 CREATE OR REPLACE FUNCTION fn_refresh_receita_total_canal()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -276,7 +246,7 @@ SET search_path = streaming, pg_temp
 AS $$
 BEGIN
     REFRESH MATERIALIZED VIEW mv_receita_total_canal;
-    RETURN NULL; -- trigger de STATEMENT não associa a uma linha específica
+    RETURN NULL;
 END;
 $$;
 
@@ -292,6 +262,11 @@ EXECUTE FUNCTION fn_refresh_receita_total_canal();
 
 CREATE TRIGGER tg_refresh_receita_doacao
 AFTER INSERT OR UPDATE OR DELETE ON Doacao
+FOR EACH STATEMENT
+EXECUTE FUNCTION fn_refresh_receita_total_canal();
+
+CREATE TRIGGER tg_refresh_receita_nivelcanal
+AFTER INSERT OR UPDATE OR DELETE ON NivelCanal
 FOR EACH STATEMENT
 EXECUTE FUNCTION fn_refresh_receita_total_canal();
 
