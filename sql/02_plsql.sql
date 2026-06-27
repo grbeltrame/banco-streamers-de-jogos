@@ -5,6 +5,54 @@
 
 SET search_path TO streaming;
 
+-- Este arquivo tambem centraliza os indices explicitos de apoio exigidos no trabalho.
+-- Ordem recomendada de execucao: 01_schema.sql -> 02_dados.sql -> 02_plsql.sql -> 04_testes.sql
+
+-- =========================================================================
+-- SINCRONIZACAO DE ATRIBUTOS DERIVADOS
+-- =========================================================================
+
+UPDATE Plataforma p
+SET qtd_users = src.total_users
+FROM (
+    SELECT nro_plataforma, COUNT(*) AS total_users
+    FROM PlataformaUsuario
+    GROUP BY nro_plataforma
+) AS src
+WHERE src.nro_plataforma = p.nro;
+
+UPDATE Plataforma p
+SET qtd_users = 0
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM PlataformaUsuario pu
+    WHERE pu.nro_plataforma = p.nro
+);
+
+UPDATE Canal c
+SET
+    qtd_videos = src.total_videos,
+    qtd_visualizacoes = src.total_visualizacoes
+FROM (
+    SELECT
+        id_canal,
+        COUNT(*) AS total_videos,
+        COALESCE(SUM(visu_total), 0) AS total_visualizacoes
+    FROM Video
+    GROUP BY id_canal
+) AS src
+WHERE src.id_canal = c.id_canal;
+
+UPDATE Canal c
+SET
+    qtd_videos = 0,
+    qtd_visualizacoes = 0
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Video v
+    WHERE v.id_canal = c.id_canal
+);
+
 -- =========================================================================
 -- VIEWS
 -- =========================================================================
@@ -152,6 +200,34 @@ LEFT JOIN doacoes doa
 
 
 -- =========================================================================
+-- INDICES DE APOIO
+-- =========================================================================
+
+DROP INDEX IF EXISTS idx_nivelcanal_id_canal_nivel;
+DROP INDEX IF EXISTS idx_inscricao_id_membro;
+DROP INDEX IF EXISTS idx_doacao_status;
+DROP INDEX IF EXISTS idx_doacao_id_comentario;
+DROP INDEX IF EXISTS idx_comentario_id_video;
+
+ANALYZE;
+
+CREATE INDEX idx_comentario_id_video
+    ON Comentario(id_video);
+
+CREATE INDEX idx_doacao_id_comentario
+    ON Doacao(id_comentario);
+
+CREATE INDEX idx_doacao_status
+    ON Doacao(status);
+
+CREATE INDEX idx_inscricao_id_membro
+    ON Inscricao(id_membro);
+
+CREATE INDEX idx_nivelcanal_id_canal_nivel
+    ON NivelCanal(id_canal, nivel);
+
+
+-- =========================================================================
 -- TRIGGERS
 -- =========================================================================
 
@@ -216,18 +292,22 @@ FOR EACH ROW EXECUTE FUNCTION fn_atualiza_qtd_videos();
 -- Trigger 3: Canal.qtd_visualizacoes
 CREATE OR REPLACE FUNCTION fn_atualiza_qtd_visualizacoes()
 RETURNS TRIGGER LANGUAGE plpgsql SET search_path = streaming, pg_temp AS $$
+DECLARE
+    v_id_canal INT;
 BEGIN
+    v_id_canal := COALESCE(NEW.id_canal, OLD.id_canal);
+
     UPDATE Canal
        SET qtd_visualizacoes = (
-               SELECT COALESCE(SUM(visu_total), 0) FROM Video WHERE id_canal = NEW.id_canal
+               SELECT COALESCE(SUM(visu_total), 0) FROM Video WHERE id_canal = v_id_canal
            )
-     WHERE id_canal = NEW.id_canal;
-    RETURN NEW;
+     WHERE id_canal = v_id_canal;
+    RETURN COALESCE(NEW, OLD);
 END;
 $$;
 
 CREATE TRIGGER tg_atualiza_qtd_visualizacoes
-AFTER INSERT OR UPDATE OF visu_total ON Video
+AFTER INSERT OR UPDATE OF visu_total OR DELETE ON Video
 FOR EACH ROW EXECUTE FUNCTION fn_atualiza_qtd_visualizacoes();
 
 -- Trigger 4: Inscricao vigente
