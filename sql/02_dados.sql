@@ -31,6 +31,12 @@ INSERT INTO Empresa (nome, nome_fantasia) VALUES
 ('Nuuvem Ltda.',              'Nuuvem'),
 ('Rockstar Games',            'RockStar');
 
+INSERT INTO Empresa (nome, nome_fantasia)
+SELECT
+    'Empresa Gerada ' || i,
+    'Marca Gerada ' || i
+FROM generate_series(1, 80) AS i;
+
 -- =========================
 -- Conversao
 -- =========================
@@ -46,6 +52,13 @@ INSERT INTO Conversao (moeda, nome, fator_conver) VALUES
 ('AUD', 'Dólar Australiano', 0.65000000),
 ('MXN', 'Peso Mexicano',     0.05800000),
 ('SEK', 'Coroa Sueca',       0.09500000);
+
+INSERT INTO Conversao (moeda, nome, fator_conver)
+SELECT
+    'X' || LPAD(i::TEXT, 3, '0'),
+    'Moeda Gerada ' || i,
+    ROUND((0.01000000 + i * 0.00310000)::NUMERIC, 8)
+FROM generate_series(1, 90) AS i;
 
 -- =========================
 -- Pais
@@ -68,6 +81,13 @@ INSERT INTO Pais (ddi, nome, moeda) VALUES
 (7,   'Rússia',         'EUR'),
 (86,  'China',          'USD'),
 (351, 'Portugal',       'EUR');
+
+INSERT INTO Pais (ddi, nome, moeda)
+SELECT
+    1000 + i,
+    'Pais Gerado ' || i,
+    'X' || LPAD((((i - 1) % 90) + 1)::TEXT, 3, '0')
+FROM generate_series(1, 85) AS i;
 
 -- =========================
 -- EmpresaPais
@@ -96,16 +116,32 @@ INSERT INTO EmpresaPais (nro_empresa, ddi_pais, id_nacional) VALUES
 (20, 55,  'BR-NUUVEM-001'),
 (21, 1,   'US-ROCKSTAR-001');
 
+INSERT INTO EmpresaPais (nro_empresa, ddi_pais, id_nacional)
+SELECT
+    21 + i,
+    1000 + i,
+    'ID-GERADO-' || LPAD(i::TEXT, 3, '0')
+FROM generate_series(1, 80) AS i;
+
 -- =========================
 -- Plataforma
 -- =========================
 
 INSERT INTO Plataforma (nome, qtd_users, empresa_fund, empresa_respo, data_fund) VALUES
-('Twitch',         140000000, 6,  2,  '2011-06-06'),
-('YouTube Gaming',  50000000, 7,  1,  '2015-08-26'),
-('Facebook Gaming', 38000000, 3,  3,  '2018-06-01'),
-('Kick',            10000000, 19, 19, '2022-12-01'),
-('TikTok Live',     30000000, 3,  3,  '2019-01-01');
+('Twitch',          0, 6,  2,  '2011-06-06'),
+('YouTube Gaming',  0, 7,  1,  '2015-08-26'),
+('Facebook Gaming', 0, 3,  3,  '2018-06-01'),
+('Kick',            0, 19, 19, '2022-12-01'),
+('TikTok Live',     0, 3,  3,  '2019-01-01');
+
+INSERT INTO Plataforma (nome, qtd_users, empresa_fund, empresa_respo, data_fund)
+SELECT
+    'Platform_' || LPAD(i::TEXT, 3, '0'),
+    0,
+    22 + ((i - 1) % 80),
+    22 + ((i + 16) % 80),
+    ('2010-01-01'::DATE + (i * 11 || ' days')::INTERVAL)::DATE
+FROM generate_series(1, 95) AS i;
 
 -- =========================
 -- Usuario  (id_usuario é SERIAL — não precisa ser informado)
@@ -312,15 +348,24 @@ JOIN Usuario u ON u.nick = 'streamer_' || i;
 
 INSERT INTO PlataformaUsuario (nro_plataforma, id_usuario, nro_usuario)
 SELECT (i % 5) + 1, u.id_usuario, 'uid_user_' || i
-FROM generate_series(1, 900) AS i
+FROM generate_series(1, 850) AS i
 JOIN Usuario u ON u.nick = 'user_' || i;
 
+UPDATE Plataforma p
+SET qtd_users = src.total_users
+FROM (
+    SELECT nro_plataforma, COUNT(*) AS total_users
+    FROM PlataformaUsuario
+    GROUP BY nro_plataforma
+) AS src
+WHERE src.nro_plataforma = p.nro;
+
 -- =========================
--- Canal  (usa id_streamer)
+-- Canal  (usa id_streamer e ddi_streamer)
 -- =========================
 
-INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, id_streamer)
-SELECT t.nome, t.nro_plataforma, t.tipo, t.data_inicio, t.descricao, u.id_usuario
+INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, id_streamer, ddi_streamer)
+SELECT t.nome, t.nro_plataforma, t.tipo, t.data_inicio, t.descricao, s.id_usuario, s.ddi_pais
 FROM (VALUES
     ('gaules',         1, 'publico', DATE '2015-07-10', 'CS e FPS competitivo',         'gaules'),
     ('gaules',         2, 'publico', DATE '2016-01-01', 'Highlights e torneios',        'gaules'),
@@ -374,18 +419,21 @@ FROM (VALUES
     ('s1mple',         1, 'publico', DATE '2016-08-01', 'CS profissional',              's1mple'),
     ('niko',           1, 'publico', DATE '2017-04-01', 'CS profissional',              'niko')
 ) AS t(nome, nro_plataforma, tipo, data_inicio, descricao, nick)
-JOIN Usuario u ON u.nick = t.nick;
+JOIN Usuario u ON u.nick = t.nick
+JOIN StreamerPais s ON s.id_usuario = u.id_usuario;
 
-INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, id_streamer)
+INSERT INTO Canal (nome, nro_plataforma, tipo, data_inicio, descricao, id_streamer, ddi_streamer)
 SELECT
     'streamer_' || i,
     (i % 5) + 1,
     'publico',
     ('2018-01-01'::DATE + (i * 30 || ' days')::INTERVAL)::DATE,
     'Canal do streamer ' || i,
-    u.id_usuario
+    s.id_usuario,
+    s.ddi_pais
 FROM generate_series(1, 70) AS i
-JOIN Usuario u ON u.nick = 'streamer_' || i;
+JOIN Usuario u ON u.nick = 'streamer_' || i
+JOIN StreamerPais s ON s.id_usuario = u.id_usuario;
 
 -- =========================
 -- Patrocinio (usa id_canal)
@@ -416,6 +464,14 @@ FROM (VALUES
     (4,  'hasanabi',     1, 12000.00)
 ) AS t(nro_empresa, nome_canal, nro_plataforma, valor)
 JOIN Canal c ON c.nome = t.nome_canal AND c.nro_plataforma = t.nro_plataforma;
+
+INSERT INTO Patrocinio (nro_empresa, id_canal, valor)
+SELECT
+    22 + ((c.id_canal - 1) % 80),
+    c.id_canal,
+    ROUND((15000 + ((c.id_canal * 137) % 70000))::NUMERIC, 2)
+FROM Canal c
+WHERE c.id_canal <= 80;
 
 -- =========================
 -- NivelCanal (usa id_canal)
@@ -490,19 +546,35 @@ SELECT
     (1000  + (i * 137) % 50000),
     (10000 + (i * 997) % 5000000)
 FROM Canal c
-CROSS JOIN generate_series(1, 10) AS i;
+CROSS JOIN generate_series(1, 8) AS i;
+
+UPDATE Canal c
+SET
+    qtd_videos = src.total_videos,
+    qtd_visualizacoes = src.total_visualizacoes
+FROM (
+    SELECT
+        id_canal,
+        COUNT(*) AS total_videos,
+        COALESCE(SUM(visu_total), 0) AS total_visualizacoes
+    FROM Video
+    GROUP BY id_canal
+) AS src
+WHERE src.id_canal = c.id_canal;
 
 -- =========================
--- Participa (usa id_streamer)
+-- Participa (usa id_streamer e ddi_streamer)
 -- =========================
 
-INSERT INTO Participa (id_video, id_streamer)
+INSERT INTO Participa (id_video, id_streamer, ddi_streamer)
 SELECT DISTINCT
     v.id_video,
-    s.id_usuario
+    s.id_usuario,
+    s.ddi_pais
 FROM Video v
 JOIN Canal c ON c.id_canal = v.id_canal
-JOIN StreamerPais s ON s.id_usuario <> c.id_streamer
+JOIN StreamerPais s
+    ON NOT (s.id_usuario = c.id_streamer AND s.ddi_pais = c.ddi_streamer)
 WHERE v.id_video % 7 = 0
 LIMIT 200;
 
@@ -529,31 +601,38 @@ SELECT
     (v.id_video % 3 <> 0)
 FROM Video v
 CROSS JOIN (SELECT id_usuario, nick FROM Usuario WHERE nick LIKE 'user_%' LIMIT 10) u
+ORDER BY v.id_video, u.nick
 LIMIT 1000;
 
 -- =========================
 -- Doacao (usa id_comentario; metodo determina tabela de pagamento)
 -- =========================
 
+WITH comentarios_base AS (
+    SELECT
+        c.id_comentario,
+        ROW_NUMBER() OVER (ORDER BY c.id_comentario) AS rn
+    FROM Comentario c
+    WHERE c.id_video % 2 = 0
+)
 INSERT INTO Doacao (id_comentario, seq_pg, metodo, valor, status)
 SELECT
     c.id_comentario,
     1,
-    CASE (ABS(HASHTEXT(c.id_usuario::TEXT || c.id_video::TEXT)) % 4)
+    CASE ((c.rn - 1) % 4)
         WHEN 0 THEN 'bitcoin'
         WHEN 1 THEN 'paypal'
         WHEN 2 THEN 'cartao_credito'
         ELSE        'mecanismo_plataforma'
     END,
-    ROUND((5.00 + (ABS(HASHTEXT(c.id_usuario::TEXT || c.id_video::TEXT)) % 200))::NUMERIC, 2),
-    CASE (ABS(HASHTEXT(c.id_usuario::TEXT)) % 3)
+    ROUND((5.00 + ((c.rn * 13) % 200))::NUMERIC, 2),
+    CASE ((c.rn - 1) % 3)
         WHEN 0 THEN 'recebido'
         WHEN 1 THEN 'lido'
         ELSE        'recusado'
     END
-FROM Comentario c
-WHERE c.id_video % 2 = 0
-LIMIT 500;
+FROM comentarios_base c
+WHERE c.rn <= 500;
 
 -- =========================
 -- Bitcoin
