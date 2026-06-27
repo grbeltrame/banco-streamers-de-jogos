@@ -4,6 +4,8 @@
 
 SET search_path TO streaming;
 
+-- Ordem recomendada de execucao: 01_schema.sql -> 02_dados.sql -> 02_plsql.sql -> 04_testes.sql
+
 -- =========================================================================
 -- TESTES VIA FUNCTIONS (SELECT * FROM fn_xxx)
 -- =========================================================================
@@ -67,16 +69,34 @@ CALL sp_gastos_mensais_membros();
 FETCH 10 FROM cur_gastos_mensais;
 COMMIT;
 
+-- Procedure 2: filtrado por usuário (id = 1)
+BEGIN;
+CALL sp_gastos_mensais_membros('cur_usuario', 1);
+FETCH ALL FROM cur_usuario;
+COMMIT;
+
 -- Procedure 3: todos os canais com doações
 BEGIN;
 CALL sp_doacoes_por_canal();
 FETCH 10 FROM cur_doacoes_canal;
 COMMIT;
 
+-- Procedure 3: filtrado por canal (id = 22)
+BEGIN;
+CALL sp_doacoes_por_canal('cur_canal', 22);
+FETCH ALL FROM cur_canal;
+COMMIT;
+
 -- Procedure 4: todos os vídeos com doações lidas
 BEGIN;
 CALL sp_doacoes_lidas_por_video();
 FETCH 10 FROM cur_doacoes_video;
+COMMIT;
+
+-- Procedure 4: filtrado por vídeo (id = 22)
+BEGIN;
+CALL sp_doacoes_lidas_por_video('cur_video', 22);
+FETCH ALL FROM cur_video;
 COMMIT;
 
 -- Procedure 5: top 10 por patrocínio
