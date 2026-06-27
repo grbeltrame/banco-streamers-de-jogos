@@ -98,15 +98,13 @@ CREATE TABLE Canal (
     nro_plataforma    INT          NOT NULL,
     tipo              VARCHAR(10)  NOT NULL CHECK (tipo IN ('privado', 'publico', 'misto')),
     data_inicio       DATE         NOT NULL,
-    descricao         TEXT         NOT NULL,
+    descricao         TEXT,
     qtd_videos        INT          NOT NULL DEFAULT 0 CHECK (qtd_videos >= 0),
     qtd_visualizacoes BIGINT       NOT NULL DEFAULT 0 CHECK (qtd_visualizacoes >= 0),
     id_streamer       INT          NOT NULL,
-    ddi_streamer      INT          NOT NULL,
     CONSTRAINT uq_canal            UNIQUE (nome, nro_plataforma),
     CONSTRAINT fk_canal_plataforma FOREIGN KEY (nro_plataforma) REFERENCES Plataforma(nro),
-    CONSTRAINT fk_canal_streamer   FOREIGN KEY (id_streamer, ddi_streamer)
-        REFERENCES StreamerPais(id_usuario, ddi_pais)
+    CONSTRAINT fk_canal_streamer   FOREIGN KEY (id_streamer)    REFERENCES Usuario(id_usuario)
 );
 
 CREATE TABLE Patrocinio (
@@ -156,13 +154,11 @@ CREATE TABLE Video (
 );
 
 CREATE TABLE Participa (
-    id_video      INT NOT NULL,
-    id_streamer   INT NOT NULL,
-    ddi_streamer  INT NOT NULL,
-    PRIMARY KEY (id_video, id_streamer, ddi_streamer),
+    id_video    INT NOT NULL,
+    id_streamer INT NOT NULL,
+    PRIMARY KEY (id_video, id_streamer),
     CONSTRAINT fk_participa_video    FOREIGN KEY (id_video)    REFERENCES Video(id_video),
-    CONSTRAINT fk_participa_streamer FOREIGN KEY (id_streamer, ddi_streamer)
-        REFERENCES StreamerPais(id_usuario, ddi_pais)
+    CONSTRAINT fk_participa_streamer FOREIGN KEY (id_streamer) REFERENCES Usuario(id_usuario)
 );
 
 -- =========================
@@ -177,7 +173,7 @@ CREATE TABLE Comentario (
     texto         TEXT      NOT NULL,
     dataH         TIMESTAMP NOT NULL,
     coment_on     BOOLEAN   NOT NULL DEFAULT TRUE,
-    CONSTRAINT uq_comentario     UNIQUE (id_video, seq),
+    CONSTRAINT uq_comentario     UNIQUE (id_video, id_usuario, seq),
     CONSTRAINT fk_coment_video   FOREIGN KEY (id_video)   REFERENCES Video(id_video),
     CONSTRAINT fk_coment_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
 );
